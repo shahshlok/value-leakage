@@ -24,11 +24,24 @@ from value_leakage.sample import build_prompt, sample
 RUNS_ROOT = Path("runs")
 CONDITIONS = ("irrelevant_number", "neutral_boundary")
 MODEL_SPECS = {
-    "inkling": {
-        "model": "thinkingmachines/inkling",
-        "provider": None,
-        "anchors": (40_000_000, 100_000_000),
-        "historical_model": "accounts/fireworks/models/inkling",
+    # Stands in for Inkling, which has the strongest historical signal
+    # (MRF 0.063) but is unusable: every OpenRouter endpoint shares an upstream
+    # pool that 429s, and the generations that survive run at 4-5 tok/s, ~27
+    # minutes each. qwen3.5 is the strongest reachable signal (MRF 0.027, rank 3
+    # overall) and the only high-MRF model whose historical run was already on
+    # OpenRouter, so pinning its provider matches quantization to that corpus.
+    # inkling-small is NOT a substitute despite the shared family: its baseline
+    # drift is -1.17, ~25x every other model, so it is unstable rather than
+    # biased and no anchoring shift is measurable inside that.
+    "qwen3.5-122b-a10b": {
+        "model": "qwen/qwen3.5-122b-a10b",
+        "provider": "deepinfra/fp4",
+        # 41M sits at the model's own baseline median (~40M); 85M is ~2x it,
+        # mirroring the 1x/2x spacing of deepseek-flash's 24M/50M against its
+        # own ~23.7M baseline.
+        "anchors": (41_000_000, 85_000_000),
+        "historical_model": "qwen/qwen3.5-122b-a10b",
+        "historical_provider": "deepinfra/fp4",
     },
     "deepseek-flash": {
         "model": "deepseek/deepseek-v4-flash-0731",
@@ -94,7 +107,7 @@ async def pipeline(
     model_names: tuple[str, ...],
     count: int,
     max_concurrent: int,
-    max_tokens: int,
+    max_tokens: int | None,
     reasoning_effort: str | None,
 ) -> None:
     for cell in experiment_cells(model_names):
@@ -150,10 +163,10 @@ async def pipeline(
 
 
 def main(
-    models: str = "inkling,deepseek-flash",
+    models: str = "qwen3.5-122b-a10b,deepseek-flash",
     count: int = 5,
-    max_concurrent: int = 5,
-    max_tokens: int = 64000,
+    max_concurrent: int = 10,
+    max_tokens: int | None = None,
     reasoning_effort: str | None = "high",
     run_dir: str | None = None,
     dry_run: bool = False,

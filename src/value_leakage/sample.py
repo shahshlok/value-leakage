@@ -146,7 +146,7 @@ async def sample(
     count: int,
     max_concurrent: int,
     model: str,
-    max_tokens: int,
+    max_tokens: int | None,
     reasoning_effort: str | None,
     out: str,
     backend: str = "fireworks",
@@ -178,7 +178,14 @@ async def sample(
         if reasoning_effort:
             body["reasoning"] = {"effort": reasoning_effort}
         if provider:
-            body["provider"] = {"order": [provider], "allow_fallbacks": False}
+            # Hard pin. Quantization varies across a model's endpoints —
+            # qwen3.5 is served fp4, fp8 and bf16 by different providers — and
+            # the historical corpus was collected on one of them, so a fallback
+            # would reintroduce the provider confound the pin exists to remove.
+            # The cost is that an upstream 429 leaves a hole rather than a
+            # slower row; the refill pass in anchoring.py is what closes those.
+            order = [provider] if isinstance(provider, str) else list(provider)
+            body["provider"] = {"order": order, "allow_fallbacks": False}
         responses = await openrouter_batch(
             client=get_openrouter_client(),
             model=model,

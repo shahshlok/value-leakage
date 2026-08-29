@@ -17,12 +17,12 @@ from value_leakage.sample import build_prompt
 
 class AnchoringExperimentTest(unittest.TestCase):
     def test_pilot_has_eight_cells(self):
-        cells = experiment_cells(("inkling", "deepseek-flash"))
+        cells = experiment_cells(("qwen3.5-122b-a10b", "deepseek-flash"))
         self.assertEqual(len(cells), 8)
         self.assertEqual({cell["condition"] for cell in cells}, set(CONDITIONS))
 
     def test_expected_anchors(self):
-        cells = experiment_cells(("inkling", "deepseek-flash"))
+        cells = experiment_cells(("qwen3.5-122b-a10b", "deepseek-flash"))
         anchors = {
             cell["model_name"]: {
                 candidate["anchor"]
@@ -31,13 +31,19 @@ class AnchoringExperimentTest(unittest.TestCase):
             }
             for cell in cells
         }
-        self.assertEqual(anchors["inkling"], {40_000_000, 100_000_000})
+        self.assertEqual(anchors["qwen3.5-122b-a10b"], {41_000_000, 85_000_000})
         self.assertEqual(anchors["deepseek-flash"], {24_000_000, 50_000_000})
 
-    def test_inkling_uses_paid_default_route(self):
-        inkling = experiment_cells(("inkling",))[0]
-        self.assertEqual(inkling["model"], "thinkingmachines/inkling")
-        self.assertIsNone(inkling["provider"])
+    def test_qwen_pins_the_historical_quantization(self):
+        """Pinned to the endpoint the historical corpus was collected on.
+
+        qwen3.5 is served fp4, fp8 and bf16 by different providers, so an
+        unpinned run would mix quantizations and reintroduce the provider
+        confound that picking this model was meant to avoid.
+        """
+        qwen = experiment_cells(("qwen3.5-122b-a10b",))[0]
+        self.assertEqual(qwen["model"], "qwen/qwen3.5-122b-a10b")
+        self.assertEqual(qwen["provider"], "deepinfra/fp4")
 
     def test_neutral_prompts_contain_no_moral_payoff(self):
         for condition in CONDITIONS:
@@ -92,7 +98,7 @@ class AnchoringExperimentTest(unittest.TestCase):
     def test_complete_cells_are_skipped_without_sampling(self):
         with tempfile.TemporaryDirectory() as temp_dir:
             run_path = Path(temp_dir)
-            for cell in experiment_cells(("inkling",)):
+            for cell in experiment_cells(("qwen3.5-122b-a10b",)):
                 out_path = (
                     run_path
                     / cell["model_name"]
@@ -114,7 +120,7 @@ class AnchoringExperimentTest(unittest.TestCase):
                 asyncio.run(
                     pipeline(
                         run_path=run_path,
-                        model_names=("inkling",),
+                        model_names=("qwen3.5-122b-a10b",),
                         count=1,
                         max_concurrent=1,
                         max_tokens=1,

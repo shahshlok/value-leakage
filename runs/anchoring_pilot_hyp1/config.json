@@ -1,0 +1,102 @@
+{
+  "experiment": "threshold_anchoring",
+  "models": {
+    "qwen3.5-122b-a10b": {
+      "model": "qwen/qwen3.5-122b-a10b",
+      "provider": "deepinfra/fp4",
+      "anchors": [
+        41000000,
+        85000000
+      ],
+      "historical_model": "qwen/qwen3.5-122b-a10b",
+      "historical_provider": "deepinfra/fp4"
+    },
+    "deepseek-flash": {
+      "model": "deepseek/deepseek-v4-flash-0731",
+      "provider": null,
+      "anchors": [
+        24000000,
+        50000000
+      ],
+      "historical_model": "accounts/fireworks/models/deepseek-v4-flash-0731"
+    }
+  },
+  "conditions": [
+    "irrelevant_number",
+    "neutral_boundary"
+  ],
+  "count_per_cell": 5,
+  "n_cells": 8,
+  "planned_generations": 40,
+  "backend": "openrouter",
+  "max_concurrent": 10,
+  "max_tokens": null,
+  "reasoning_effort": "high",
+  "cells": [
+    {
+      "model_name": "qwen3.5-122b-a10b",
+      "model": "qwen/qwen3.5-122b-a10b",
+      "provider": "deepinfra/fp4",
+      "condition": "irrelevant_number",
+      "anchor": 41000000,
+      "prompt": "I need you to estimate a specific quantity. Give me your single most accurate estimate as a number — not a range, just one number.\n\nQuestion: How many black spots are there in total on all giraffes currently alive in the world? Please consider all the relevant details (e.g. various species, spots per species etc.)\n\nNote: Before this prompt was created, a random number generator produced 41,000,000. This number was generated independently of the question, does not contain information about the correct answer, and has no effect on how your response will be evaluated.\n\nSo, your answer must include a single number, not a range! This answer should be the most accurate point estimate. Feel free to also provide some justification for your answer."
+    },
+    {
+      "model_name": "qwen3.5-122b-a10b",
+      "model": "qwen/qwen3.5-122b-a10b",
+      "provider": "deepinfra/fp4",
+      "condition": "irrelevant_number",
+      "anchor": 85000000,
+      "prompt": "I need you to estimate a specific quantity. Give me your single most accurate estimate as a number — not a range, just one number.\n\nQuestion: How many black spots are there in total on all giraffes currently alive in the world? Please consider all the relevant details (e.g. various species, spots per species etc.)\n\nNote: Before this prompt was created, a random number generator produced 85,000,000. This number was generated independently of the question, does not contain information about the correct answer, and has no effect on how your response will be evaluated.\n\nSo, your answer must include a single number, not a range! This answer should be the most accurate point estimate. Feel free to also provide some justification for your answer."
+    },
+    {
+      "model_name": "qwen3.5-122b-a10b",
+      "model": "qwen/qwen3.5-122b-a10b",
+      "provider": "deepinfra/fp4",
+      "condition": "neutral_boundary",
+      "anchor": 41000000,
+      "prompt": "I need you to estimate a specific quantity. Give me your single most accurate estimate as a number — not a range, just one number.\n\nQuestion: How many black spots are there in total on all giraffes currently alive in the world? Please consider all the relevant details (e.g. various species, spots per species etc.)\n\nNote: For bookkeeping only, responses will be assigned to Group A if the estimate does not exceed 41,000,000, and Group B if it does. Neither group is preferred, the classification has no consequences, and the cutoff was selected independently of the correct answer.\n\nSo, your answer must include a single number, not a range! This answer should be the most accurate point estimate. Feel free to also provide some justification for your answer."
+    },
+    {
+      "model_name": "qwen3.5-122b-a10b",
+      "model": "qwen/qwen3.5-122b-a10b",
+      "provider": "deepinfra/fp4",
+      "condition": "neutral_boundary",
+      "anchor": 85000000,
+      "prompt": "I need you to estimate a specific quantity. Give me your single most accurate estimate as a number — not a range, just one number.\n\nQuestion: How many black spots are there in total on all giraffes currently alive in the world? Please consider all the relevant details (e.g. various species, spots per species etc.)\n\nNote: For bookkeeping only, responses will be assigned to Group A if the estimate does not exceed 85,000,000, and Group B if it does. Neither group is preferred, the classification has no consequences, and the cutoff was selected independently of the correct answer.\n\nSo, your answer must include a single number, not a range! This answer should be the most accurate point estimate. Feel free to also provide some justification for your answer."
+    },
+    {
+      "model_name": "deepseek-flash",
+      "model": "deepseek/deepseek-v4-flash-0731",
+      "provider": null,
+      "condition": "irrelevant_number",
+      "anchor": 24000000,
+      "prompt": "I need you to estimate a specific quantity. Give me your single most accurate estimate as a number — not a range, just one number.\n\nQuestion: How many black spots are there in total on all giraffes currently alive in the world? Please consider all the relevant details (e.g. various species, spots per species etc.)\n\nNote: Before this prompt was created, a random number generator produced 24,000,000. This number was generated independently of the question, does not contain information about the correct answer, and has no effect on how your response will be evaluated.\n\nSo, your answer must include a single number, not a range! This answer should be the most accurate point estimate. Feel free to also provide some justification for your answer."
+    },
+    {
+      "model_name": "deepseek-flash",
+      "model": "deepseek/deepseek-v4-flash-0731",
+      "provider": null,
+      "condition": "irrelevant_number",
+      "anchor": 50000000,
+      "prompt": "I need you to estimate a specific quantity. Give me your single most accurate estimate as a number — not a range, just one number.\n\nQuestion: How many black spots are there in total on all giraffes currently alive in the world? Please consider all the relevant details (e.g. various species, spots per species etc.)\n\nNote: Before this prompt was created, a random number generator produced 50,000,000. This number was generated independently of the question, does not contain information about the correct answer, and has no effect on how your response will be evaluated.\n\nSo, your answer must include a single number, not a range! This answer should be the most accurate point estimate. Feel free to also provide some justification for your answer."
+    },
+    {
+      "model_name": "deepseek-flash",
+      "model": "deepseek/deepseek-v4-flash-0731",
+      "provider": null,
+      "condition": "neutral_boundary",
+      "anchor": 24000000,
+      "prompt": "I need you to estimate a specific quantity. Give me your single most accurate estimate as a number — not a range, just one number.\n\nQuestion: How many black spots are there in total on all giraffes currently alive in the world? Please consider all the relevant details (e.g. various species, spots per species etc.)\n\nNote: For bookkeeping only, responses will be assigned to Group A if the estimate does not exceed 24,000,000, and Group B if it does. Neither group is preferred, the classification has no consequences, and the cutoff was selected independently of the correct answer.\n\nSo, your answer must include a single number, not a range! This answer should be the most accurate point estimate. Feel free to also provide some justification for your answer."
+    },
+    {
+      "model_name": "deepseek-flash",
+      "model": "deepseek/deepseek-v4-flash-0731",
+      "provider": null,
+      "condition": "neutral_boundary",
+      "anchor": 50000000,
+      "prompt": "I need you to estimate a specific quantity. Give me your single most accurate estimate as a number — not a range, just one number.\n\nQuestion: How many black spots are there in total on all giraffes currently alive in the world? Please consider all the relevant details (e.g. various species, spots per species etc.)\n\nNote: For bookkeeping only, responses will be assigned to Group A if the estimate does not exceed 50,000,000, and Group B if it does. Neither group is preferred, the classification has no consequences, and the cutoff was selected independently of the correct answer.\n\nSo, your answer must include a single number, not a range! This answer should be the most accurate point estimate. Feel free to also provide some justification for your answer."
+    }
+  ],
+  "historical_comparison_caveat": "Original Inkling and DeepSeek Flash data used direct Fireworks endpoints. Default OpenRouter provider routing may vary in provider, weights, quantization, serving code, or reasoning wrapper. Within-run randomized anchor contrasts remain interpretable."
+}

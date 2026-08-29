@@ -23,10 +23,14 @@ def get_openrouter_client() -> AsyncOpenAI:
     )
 
 
+# 3 attempts capped at 10s gave up after ~20s, which is not long enough to ride
+# out an upstream shared-pool 429 (the failure mode that emptied whole Inkling
+# cells). ~3 minutes of patience costs nothing when a single generation already
+# takes minutes.
 @retry(
     retry=retry_if_exception_type((RateLimitError, APIConnectionError, APITimeoutError)),
-    stop=stop_after_attempt(3),
-    wait=wait_exponential(multiplier=1, min=1, max=10),
+    stop=stop_after_attempt(8),
+    wait=wait_exponential(multiplier=2, min=2, max=60),
 )
 async def call_api(
     client: AsyncOpenAI,
@@ -34,7 +38,7 @@ async def call_api(
     messages: list,
     response_format=None,
     temperature: float = 1.0,
-    max_tokens: int = 5000,
+    max_tokens: int | None = 5000,
     top_p: float = 1.0,
     logprobs: bool = False,
     top_logprobs: int | None = None,
@@ -50,7 +54,8 @@ async def call_api(
         messages: Chat messages.
         response_format: Pydantic model for structured output (uses .parse).
         temperature: Sampling temperature.
-        max_tokens: Maximum tokens in response.
+        max_tokens: Maximum tokens in response; None omits the field so the
+            provider's own default applies.
         top_p: Nucleus sampling threshold.
         logprobs: Enable logprobs.
         top_logprobs: Number of top logprobs to return.
@@ -65,13 +70,20 @@ async def call_api(
         model=model,
         messages=messages,
         temperature=temperature,
-        max_tokens=max_tokens,
         top_p=top_p,
         logprobs=logprobs,
         top_logprobs=top_logprobs,
         extra_body=extra_body if extra_body else None,
         **kwargs,
     )
+
+    # Omitted entirely when None so each provider applies its own default.
+    # Sending a ceiling above a provider's max_completion_tokens gets the
+    # request rejected, and OpenRouter also drops providers whose cap is below
+    # the requested value — that is what silently excluded Baseten (32,768) and
+    # forced this experiment onto 4-5 tok/s endpoints.
+    if max_tokens is not None:
+        params["max_tokens"] = max_tokens
 
     if response_format is not None:
         return await client.beta.chat.completions.parse(
@@ -87,7 +99,7 @@ async def process_one(
     semaphore: asyncio.Semaphore,
     response_format=None,
     temperature: float = 1.0,
-    max_tokens: int = 5000,
+    max_tokens: int | None = 5000,
     top_p: float = 1.0,
     logprobs: bool = False,
     top_logprobs: int | None = None,
@@ -117,7 +129,7 @@ async def process_batch(
     messages_list: list,
     response_format=None,
     temperature: float = 1.0,
-    max_tokens: int = 5000,
+    max_tokens: int | None = 5000,
     max_concurrent: int = 10,
     top_p: float = 1.0,
     logprobs: bool = False,
@@ -135,7 +147,8 @@ async def process_batch(
         messages_list: List of chat message lists.
         response_format: Pydantic model for structured output.
         temperature: Sampling temperature.
-        max_tokens: Maximum tokens in response.
+        max_tokens: Maximum tokens in response; None omits the field so the
+            provider's own default applies.
         max_concurrent: Maximum concurrent requests.
         top_p: Nucleus sampling threshold.
         logprobs: Enable logprobs.
