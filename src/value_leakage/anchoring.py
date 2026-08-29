@@ -9,7 +9,8 @@ Main experiment (400 generations total):
     uv run python -m value_leakage.anchoring --count 50
 
 ``count`` is per model x framing x anchor cell. Existing cell files are
-skipped; incomplete cells are refilled once per invocation.
+skipped; incomplete cells are refilled once per invocation. Requests are run
+sequentially, four cells per model.
 """
 
 import asyncio
@@ -61,9 +62,14 @@ MODEL_SPECS = {
 }
 
 
+def _has_visible_content(row: dict) -> bool:
+    content = row.get("content")
+    return isinstance(content, str) and bool(content.strip())
+
+
 def _successful_rows(rows: list[dict]) -> list[dict]:
     """Return response rows that contain a successful sample result."""
-    return [row for row in rows if "error" not in row]
+    return [row for row in rows if "error" not in row and _has_visible_content(row)]
 
 
 def merge_cell_results(
@@ -81,7 +87,11 @@ def merge_cell_results(
     successes = _successful_rows(existing_rows) + _successful_rows(refill_rows)
 
     reindexed_successes = [{**row, "i": index} for index, row in enumerate(successes)]
-    failures = [row for row in existing_rows + refill_rows if "error" in row]
+    failures = [
+        row
+        for row in existing_rows + refill_rows
+        if "error" in row or not _has_visible_content(row)
+    ]
 
     merged = dict(existing)
     merged["rows"] = reindexed_successes + failures
@@ -105,10 +115,71 @@ def experiment_cells(model_names: tuple[str, ...]) -> list[dict]:
                         "provider": spec["provider"],
                         "condition": condition,
                         "anchor": anchor,
+                        "cell_id": f"{model_name}/{condition}_{anchor}",
                         "prompt": build_prompt(condition, anchor),
                     }
                 )
     return cells
+
+
+async def _run_cell_request(
+    run_path: Path,
+    cell: dict,
+    count: int,
+    max_concurrent: int,
+    max_tokens: int | None,
+    reasoning_effort: str | None,
+) -> None:
+    """Run one request for a cell and preserve its resumable output file."""
+    model_path = run_path / cell["model_name"]
+    out_path = model_path / (f"{cell['condition']}_{cell['anchor']}.json")
+    model_path.mkdir(parents=True, exist_ok=True)
+
+    if out_path.exists():
+        existing = json.loads(out_path.read_text())
+        missing = count - len(_successful_rows(existing.get("rows", [])))
+        if missing <= 0:
+            print(f"Skipping complete cell: {out_path}")
+            return
+        print(f"Refilling {out_path}: requesting {missing} missing successful rows")
+        refill_path = out_path.with_suffix(".refill.json")
+        try:
+            await sample(
+                condition=cell["condition"],
+                threshold=cell["anchor"],
+                count=missing,
+                max_concurrent=min(max_concurrent, missing),
+                model=cell["model"],
+                max_tokens=max_tokens,
+                reasoning_effort=reasoning_effort,
+                out=str(refill_path),
+                backend="openrouter",
+                provider=cell["provider"],
+            )
+            refill = json.loads(refill_path.read_text())
+            out_path.write_text(
+                json.dumps(
+                    merge_cell_results(existing, refill),
+                    indent=2,
+                    ensure_ascii=False,
+                )
+            )
+        finally:
+            refill_path.unlink(missing_ok=True)
+        return
+
+    await sample(
+        condition=cell["condition"],
+        threshold=cell["anchor"],
+        count=count,
+        max_concurrent=min(max_concurrent, count),
+        model=cell["model"],
+        max_tokens=max_tokens,
+        reasoning_effort=reasoning_effort,
+        out=str(out_path),
+        backend="openrouter",
+        provider=cell["provider"],
+    )
 
 
 async def pipeline(
@@ -119,55 +190,11 @@ async def pipeline(
     max_tokens: int | None,
     reasoning_effort: str | None,
 ) -> None:
+    if max_concurrent < 1:
+        raise ValueError("max_concurrent must be positive")
     for cell in experiment_cells(model_names):
-        model_path = run_path / cell["model_name"]
-        out_path = model_path / (f"{cell['condition']}_{cell['anchor']}.json")
-        model_path.mkdir(parents=True, exist_ok=True)
-        if out_path.exists():
-            existing = json.loads(out_path.read_text())
-            missing = count - len(_successful_rows(existing.get("rows", [])))
-            if missing <= 0:
-                print(f"Skipping complete cell: {out_path}")
-                continue
-            print(
-                f"Refilling {out_path}: requesting {missing} missing successful row(s)"
-            )
-            refill_path = out_path.with_suffix(".refill.json")
-            try:
-                await sample(
-                    condition=cell["condition"],
-                    threshold=cell["anchor"],
-                    count=missing,
-                    max_concurrent=max_concurrent,
-                    model=cell["model"],
-                    max_tokens=max_tokens,
-                    reasoning_effort=reasoning_effort,
-                    out=str(refill_path),
-                    backend="openrouter",
-                    provider=cell["provider"],
-                )
-                refill = json.loads(refill_path.read_text())
-                out_path.write_text(
-                    json.dumps(
-                        merge_cell_results(existing, refill),
-                        indent=2,
-                        ensure_ascii=False,
-                    )
-                )
-            finally:
-                refill_path.unlink(missing_ok=True)
-            continue
-        await sample(
-            condition=cell["condition"],
-            threshold=cell["anchor"],
-            count=count,
-            max_concurrent=max_concurrent,
-            model=cell["model"],
-            max_tokens=max_tokens,
-            reasoning_effort=reasoning_effort,
-            out=str(out_path),
-            backend="openrouter",
-            provider=cell["provider"],
+        await _run_cell_request(
+            run_path, cell, count, max_concurrent, max_tokens, reasoning_effort
         )
 
 

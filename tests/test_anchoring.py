@@ -62,13 +62,22 @@ class AnchoringExperimentTest(unittest.TestCase):
         cell = {
             "rows": [
                 {"i": 0, "content": "ok"},
-                {"i": 1, "error": "timeout"},
-                {"i": 2, "error": "timeout"},
+                {"i": 1, "content": ""},
+                {"i": 2, "content": "   "},
             ]
         }
         self.assertEqual(len(_successful_rows(cell["rows"])), 1)
         self.assertEqual(3 - len(_successful_rows(cell["rows"])), 2)
         self.assertEqual(1 - len(_successful_rows(cell["rows"])), 0)
+
+    def test_empty_rows_are_preserved_as_failures_when_merging(self):
+        merged = merge_cell_results(
+            {"rows": [{"i": 0, "content": ""}]},
+            {"rows": [{"i": 0, "content": "refilled"}]},
+        )
+        self.assertEqual(
+            [row["content"] for row in merged["rows"]], ["refilled", ""]
+        )
 
     def test_merge_reindexes_successes_and_keeps_failures_and_metadata(self):
         existing = {
@@ -134,6 +143,60 @@ class AnchoringExperimentTest(unittest.TestCase):
                 )
 
             sample_mock.assert_not_awaited()
+
+    def test_pipeline_resumes_one_request_per_cell(self):
+        with tempfile.TemporaryDirectory() as temp_dir:
+            run_path = Path(temp_dir)
+            cells = experiment_cells(("qwen3.5-122b-a10b",))
+            complete = cells[0]
+            partial = cells[1]
+            complete_path = (
+                run_path / complete["model_name"]
+                / f"{complete['condition']}_{complete['anchor']}.json"
+            )
+            complete_path.parent.mkdir(parents=True, exist_ok=True)
+            complete_path.write_text(
+                json.dumps({"rows": [{"content": "done"}, {"content": "done"}]})
+            )
+            partial_path = (
+                run_path / partial["model_name"]
+                / f"{partial['condition']}_{partial['anchor']}.json"
+            )
+            partial_path.write_text(json.dumps({"rows": [{"content": "old"}]}))
+
+            async def fake_sample(**kwargs):
+                Path(kwargs["out"]).write_text(
+                    json.dumps({"rows": [{"i": 0, "content": "new"}]})
+                )
+
+            sample_mock = AsyncMock(side_effect=fake_sample)
+            with patch("value_leakage.anchoring.sample", new=sample_mock):
+                asyncio.run(
+                    pipeline(
+                        run_path=run_path,
+                        model_names=("qwen3.5-122b-a10b",),
+                        count=2,
+                        max_concurrent=1,
+                        max_tokens=64000,
+                        reasoning_effort="high",
+                    )
+                )
+
+            self.assertEqual(sample_mock.call_count, 2 * (len(cells) - 2) + 1)
+            self.assertTrue(
+                all(call.kwargs["provider"] is None for call in sample_mock.call_args_list)
+            )
+            self.assertTrue(
+                all(call.kwargs["count"] == 1 for call in sample_mock.call_args_list)
+            )
+            self.assertEqual(
+                json.loads(complete_path.read_text())["rows"][0]["content"],
+                "done",
+            )
+            self.assertEqual(
+                [row["content"] for row in json.loads(partial_path.read_text())["rows"]],
+                ["old", "new"],
+            )
 
     def test_default_config_records_two_qwen_models_and_sampling_settings(self):
         with tempfile.TemporaryDirectory() as temp_dir:
