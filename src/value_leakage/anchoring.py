@@ -28,26 +28,35 @@ MODEL_SPECS = {
     # (MRF 0.063) but is unusable: every OpenRouter endpoint shares an upstream
     # pool that 429s, and the generations that survive run at 4-5 tok/s, ~27
     # minutes each. qwen3.5 is the strongest reachable signal (MRF 0.027, rank 3
-    # overall) and the only high-MRF model whose historical run was already on
-    # OpenRouter, so pinning its provider matches quantization to that corpus.
+    # overall). Its historical provider is retained as comparison metadata;
+    # current runs leave provider selection to OpenRouter.
     # inkling-small is NOT a substitute despite the shared family: its baseline
     # drift is -1.17, ~25x every other model, so it is unstable rather than
     # biased and no anchoring shift is measurable inside that.
     "qwen3.5-122b-a10b": {
         "model": "qwen/qwen3.5-122b-a10b",
-        "provider": "deepinfra/fp4",
-        # 41M sits at the model's own baseline median (~40M); 85M is ~2x it,
-        # mirroring the 1x/2x spacing of deepseek-flash's 24M/50M against its
-        # own ~23.7M baseline.
+        "provider": None,
+        # 41M sits at the model's own baseline median (~40M); 85M is ~2x it.
         "anchors": (41_000_000, 85_000_000),
         "historical_model": "qwen/qwen3.5-122b-a10b",
         "historical_provider": "deepinfra/fp4",
     },
-    "deepseek-flash": {
-        "model": "deepseek/deepseek-v4-flash-0731",
+    "qwen3p8-2p4t-a95b": {
+        "model": "qwen/qwen3.8-2.4t-a95b",
         "provider": None,
-        "anchors": (24_000_000, 50_000_000),
-        "historical_model": ("accounts/fireworks/models/deepseek-v4-flash-0731"),
+        # Historical baseline median is 39.5M (88 valid estimates; middle
+        # values 39M and 40M), and threshold.json records the same threshold.
+        # 40M is the rounded-near anchor; 80M is clearly higher while still
+        # within the historical baseline's plausible estimate range.
+        "anchors": (40_000_000, 80_000_000),
+        "historical_run": "runs/qwen3p8-2p4t-a95b_20260815_030703",
+        "historical_model": "accounts/fireworks/models/qwen3p8-2p4t-a95b",
+        "historical_baseline_median": 39_500_000,
+        "historical_threshold": 39_500_000,
+        "anchor_rationale": (
+            "40M is rounded close to the historical 39.5M median/threshold; "
+            "80M is a clearly higher but historically plausible anchor."
+        ),
     },
 }
 
@@ -163,10 +172,10 @@ async def pipeline(
 
 
 def main(
-    models: str = "qwen3.5-122b-a10b,deepseek-flash",
+    models: str = "qwen3.5-122b-a10b,qwen3p8-2p4t-a95b",
     count: int = 5,
     max_concurrent: int = 10,
-    max_tokens: int | None = None,
+    max_tokens: int | None = 64000,
     reasoning_effort: str | None = "high",
     run_dir: str | None = None,
     dry_run: bool = False,
@@ -182,25 +191,28 @@ def main(
     stamp = datetime.now().strftime("%Y%m%d_%H%M%S")
     run_path = Path(run_dir) if run_dir else RUNS_ROOT / f"anchoring_{stamp}"
     run_path.mkdir(parents=True, exist_ok=True)
+    config_path = run_path / "config.json"
+    n_cells = len(experiment_cells(model_names))
     cells = experiment_cells(model_names)
     config = {
         "experiment": "threshold_anchoring",
         "models": {name: MODEL_SPECS[name] for name in model_names},
         "conditions": list(CONDITIONS),
         "count_per_cell": count,
-        "n_cells": len(cells),
-        "planned_generations": count * len(cells),
+        "n_cells": n_cells,
+        "planned_generations": count * n_cells,
         "backend": "openrouter",
         "max_concurrent": max_concurrent,
         "max_tokens": max_tokens,
         "reasoning_effort": reasoning_effort,
         "cells": cells,
         "historical_comparison_caveat": (
-            "Original Inkling and DeepSeek Flash data used direct Fireworks "
-            "endpoints. Default OpenRouter provider routing may vary in "
-            "provider, weights, quantization, serving code, or reasoning "
-            "wrapper. Within-run "
-            "randomized anchor contrasts remain interpretable."
+            "Historical runs used direct or provider-specific endpoints. "
+            "Current OpenRouter runs intentionally leave provider selection "
+            "unset, so provider, weights, quantization, serving code, or "
+            "reasoning wrapper may vary; historical provider fields are "
+            "recorded only as metadata. Within-run anchor contrasts remain "
+            "interpretable."
         ),
     }
     (run_path / "config.json").write_text(

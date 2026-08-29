@@ -178,12 +178,8 @@ async def sample(
         if reasoning_effort:
             body["reasoning"] = {"effort": reasoning_effort}
         if provider:
-            # Hard pin. Quantization varies across a model's endpoints —
-            # qwen3.5 is served fp4, fp8 and bf16 by different providers — and
-            # the historical corpus was collected on one of them, so a fallback
-            # would reintroduce the provider confound the pin exists to remove.
-            # The cost is that an upstream 429 leaves a hole rather than a
-            # slower row; the refill pass in anchoring.py is what closes those.
+            # An explicit provider is a caller-requested hard pin. When the
+            # caller leaves provider unset, OpenRouter chooses the provider.
             order = [provider] if isinstance(provider, str) else list(provider)
             body["provider"] = {"order": order, "allow_fallbacks": False}
         responses = await openrouter_batch(
@@ -215,5 +211,11 @@ async def sample(
          "rows": rows},
         indent=2, ensure_ascii=False))
 
-    ok = sum(1 for row in rows if "error" not in row)
+    ok = sum(
+        1
+        for row in rows
+        if "error" not in row
+        and isinstance(row.get("content"), str)
+        and row["content"].strip()
+    )
     print(f"{ok}/{count} succeeded — saved results to {out_path}")

@@ -7,9 +7,11 @@ from unittest.mock import AsyncMock, patch
 
 from value_leakage.anchoring import (
     CONDITIONS,
+    MODEL_SPECS,
     _successful_rows,
     experiment_cells,
     merge_cell_results,
+    main,
     pipeline,
 )
 from value_leakage.sample import build_prompt
@@ -17,12 +19,12 @@ from value_leakage.sample import build_prompt
 
 class AnchoringExperimentTest(unittest.TestCase):
     def test_pilot_has_eight_cells(self):
-        cells = experiment_cells(("qwen3.5-122b-a10b", "deepseek-flash"))
+        cells = experiment_cells(("qwen3.5-122b-a10b", "qwen3p8-2p4t-a95b"))
         self.assertEqual(len(cells), 8)
         self.assertEqual({cell["condition"] for cell in cells}, set(CONDITIONS))
 
     def test_expected_anchors(self):
-        cells = experiment_cells(("qwen3.5-122b-a10b", "deepseek-flash"))
+        cells = experiment_cells(("qwen3.5-122b-a10b", "qwen3p8-2p4t-a95b"))
         anchors = {
             cell["model_name"]: {
                 candidate["anchor"]
@@ -32,18 +34,21 @@ class AnchoringExperimentTest(unittest.TestCase):
             for cell in cells
         }
         self.assertEqual(anchors["qwen3.5-122b-a10b"], {41_000_000, 85_000_000})
-        self.assertEqual(anchors["deepseek-flash"], {24_000_000, 50_000_000})
+        self.assertEqual(anchors["qwen3p8-2p4t-a95b"], {40_000_000, 80_000_000})
 
-    def test_qwen_pins_the_historical_quantization(self):
-        """Pinned to the endpoint the historical corpus was collected on.
+    def test_qwen3p8_replaces_deepseek_with_unpinned_openrouter_model(self):
+        qwen = experiment_cells(("qwen3p8-2p4t-a95b",))[0]
+        self.assertEqual(qwen["model"], "qwen/qwen3.8-2.4t-a95b")
+        self.assertIsNone(qwen["provider"])
 
-        qwen3.5 is served fp4, fp8 and bf16 by different providers, so an
-        unpinned run would mix quantizations and reintroduce the provider
-        confound that picking this model was meant to avoid.
-        """
+    def test_qwen3p5_leaves_provider_unset_but_retains_history(self):
         qwen = experiment_cells(("qwen3.5-122b-a10b",))[0]
         self.assertEqual(qwen["model"], "qwen/qwen3.5-122b-a10b")
-        self.assertEqual(qwen["provider"], "deepinfra/fp4")
+        self.assertIsNone(qwen["provider"])
+        self.assertEqual(
+            MODEL_SPECS["qwen3.5-122b-a10b"]["historical_provider"],
+            "deepinfra/fp4",
+        )
 
     def test_neutral_prompts_contain_no_moral_payoff(self):
         for condition in CONDITIONS:
@@ -129,6 +134,18 @@ class AnchoringExperimentTest(unittest.TestCase):
                 )
 
             sample_mock.assert_not_awaited()
+
+    def test_default_config_records_two_qwen_models_and_sampling_settings(self):
+        with tempfile.TemporaryDirectory() as temp_dir:
+            main(run_dir=temp_dir, dry_run=True)
+            config = json.loads((Path(temp_dir) / "config.json").read_text())
+            self.assertEqual(set(config["models"]), {"qwen3.5-122b-a10b", "qwen3p8-2p4t-a95b"})
+            self.assertTrue(all(spec["provider"] is None for spec in config["models"].values()))
+            self.assertEqual(config["conditions"], list(CONDITIONS))
+            self.assertEqual(config["max_tokens"], 64000)
+            self.assertEqual(config["reasoning_effort"], "high")
+            self.assertEqual(config["n_cells"], 8)
+            self.assertEqual(config["planned_generations"], 40)
 
 
 if __name__ == "__main__":
