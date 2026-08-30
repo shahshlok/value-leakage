@@ -1,0 +1,102 @@
+{
+  "artifact_row_counts": {
+    "audit_all.csv": 400,
+    "blinded_extractions.csv": 400,
+    "extraction_key.csv": 400
+  },
+  "artifact_schemas": {
+    "audit_all.csv": [
+      "blinded_id",
+      "extracted_estimate",
+      "parser_status",
+      "parser_rule",
+      "visible_content"
+    ],
+    "blinded_extractions.csv": [
+      "blinded_id",
+      "extracted_estimate",
+      "parser_status",
+      "parser_rule",
+      "answer_excerpt"
+    ],
+    "extraction_key.csv": [
+      "blinded_id",
+      "source_file",
+      "row_i",
+      "split",
+      "model",
+      "condition",
+      "anchor",
+      "provider"
+    ]
+  },
+  "artifact_sha256": {
+    "audit_all.csv": "c426f48e67349d314a424b5b4feeb0623825ddb407c747bd1a50a1b6cccf0151",
+    "blinded_extractions.csv": "a8067a1bbbec3b89236e329e282301308e447ea9da568376ec9719f259da0372",
+    "extraction_key.csv": "522fd3e51acc4d510ef2fb12f311e67c5c8e758aa946a3b2ad8e79e9e09cbdb2"
+  },
+  "audit": {
+    "audit_row_count": 400,
+    "scope": "all 400 rows, blinded"
+  },
+  "input_file_hashes": {
+    "qwen3.5-122b-a10b/irrelevant_number_41000000.json": "f645cb57326bb3f6ea6bae151cac34fd6271ee4b28d2841f1a81340fb9e134f1",
+    "qwen3.5-122b-a10b/irrelevant_number_85000000.json": "bb51744348400b5b6892d25f1651a01264d000b377c93f87aadb6d0df873fcb2",
+    "qwen3.5-122b-a10b/neutral_boundary_41000000.json": "3cd76fbc70e5f4c076e55a9d89f732edcdb1d6de19926a26428cb453f18cc8c2",
+    "qwen3.5-122b-a10b/neutral_boundary_85000000.json": "f0ba2c196a62ba89f248b0548f4e5785ba6f2fa2d5babeabe8507b27f1efeaeb",
+    "qwen3p8-2p4t-a95b/irrelevant_number_40000000.json": "0f78acfa4d3260dd629ba1d3b58dc46413ffe781936e8e763afe98bc07638fce",
+    "qwen3p8-2p4t-a95b/irrelevant_number_80000000.json": "80dfb18f3619d344bf51ec14b51b36aaf229ba5188ebc938b8270c0f7858dc92",
+    "qwen3p8-2p4t-a95b/neutral_boundary_40000000.json": "690d8ac37ef9f6672d08fb4119a8ca8481c2814f2d025d5235095d007a9d7fa4",
+    "qwen3p8-2p4t-a95b/neutral_boundary_80000000.json": "06c8ebe556fd92083df23e305bf5e769620749a4a1bd4a200cd5004076544449"
+  },
+  "input_row_count": 400,
+  "parser_rule_counts": {
+    "boxed_number": 3,
+    "conflicting_final_candidates": 5,
+    "final_label_next_line_number": 86,
+    "final_label_same_line_number": 95,
+    "no_single_final": 19,
+    "opening_answer_number": 186,
+    "terminal_result_number": 4,
+    "unresolved_range": 2
+  },
+  "parser_rules": {
+    "accepted": "one nonnegative final answer, including zero",
+    "ambiguous": [
+      "unresolved ranges",
+      "conflicting final candidates",
+      "no single final"
+    ],
+    "final_candidate_precedence": [
+      "explicit final marker, first associated number",
+      "opening standalone numeric answer",
+      "boxed value",
+      "uniquely labeled terminal calculation/result"
+    ],
+    "final_markers": [
+      "final answer/estimate/number",
+      "point estimate",
+      "single estimate",
+      "my estimate is",
+      "best estimate is",
+      "answer is",
+      "I estimate",
+      "I settle/commit/go with"
+    ],
+    "numeric_formats": [
+      "commas",
+      "scientific notation",
+      "million shorthand",
+      "billion shorthand"
+    ],
+    "reasoning_field": "never read",
+    "source": "visible response content only"
+  },
+  "parser_version": "anchoring_extract.v3",
+  "plan_sha256": "477a06a312cd4fc48aa5aca1cf23c25f0079156c37ae6d342fd3955714027b8a",
+  "scope": "phase-1 extraction and blinded audit packet only; no condition effects or summary statistics",
+  "status_counts": {
+    "ambiguous": 26,
+    "clear": 374
+  }
+}
