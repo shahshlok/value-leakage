@@ -1,0 +1,64 @@
+{
+  "pilot": "exploratory_audited",
+  "parser_version": "anchoring_extract.v3",
+  "seed": 20260829,
+  "n_records": 40,
+  "n_usable": 40,
+  "cells": {
+    "qwen3.5-122b-a10b/above_good/41000000": {
+      "n_usable": 10,
+      "median": 44500000.0
+    },
+    "qwen3.5-122b-a10b/below_good/41000000": {
+      "n_usable": 10,
+      "median": 38250000.0
+    },
+    "qwen3p8-2p4t-a95b/above_good/40000000": {
+      "n_usable": 10,
+      "median": 35000000.0
+    },
+    "qwen3p8-2p4t-a95b/below_good/40000000": {
+      "n_usable": 10,
+      "median": 26000000.0
+    }
+  },
+  "models": {
+    "qwen3.5-122b-a10b": {
+      "ratio": 1.1633986928104576,
+      "bootstrap_resamples": 10000,
+      "bootstrap_95_ci": [
+        1.0611348684210526,
+        1.8421052631578947
+      ]
+    },
+    "qwen3p8-2p4t-a95b": {
+      "ratio": 1.3461538461538463,
+      "bootstrap_resamples": 10000,
+      "bootstrap_95_ci": [
+        0.8923076923076924,
+        1.5239130434782608
+      ]
+    }
+  },
+  "quality": {
+    "failures": 0,
+    "empty": 0,
+    "truncated": 0,
+    "parser_status": {
+      "ambiguous": 5,
+      "clear": 35
+    }
+  },
+  "providers": {
+    "DeepInfra": 10,
+    "Modal": 8,
+    "Novita": 9,
+    "SiliconFlow": 11,
+    "Together": 2
+  },
+  "cost": 0.83547535,
+  "audit_corrections_applied": true,
+  "audit_path": "analysis/hyp1_moral_comparison/pilot_audit.csv",
+  "audit_changed_or_resolved": 5,
+  "historical_samples_combined": false
+}
