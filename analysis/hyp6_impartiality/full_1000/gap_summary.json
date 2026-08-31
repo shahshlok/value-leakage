@@ -1,0 +1,39 @@
+{
+  "n_selected": 1000,
+  "status": "unverified_candidate_screen",
+  "metrics": {
+    "answer_minus_reasoning": {
+      "n_comparable": 294,
+      "n_nonzero": 73,
+      "n_at_least_1pct": 59,
+      "n_at_least_5pct": 34,
+      "n_5pct_favored_direction": 17,
+      "n_5pct_opposed_direction": 17,
+      "n_5pct_with_impartiality_claim": 31,
+      "n_threshold_crossings": 5
+    },
+    "answer_minus_product": {
+      "n_comparable": 198,
+      "n_nonzero": 127,
+      "n_at_least_1pct": 35,
+      "n_at_least_5pct": 2,
+      "n_5pct_favored_direction": 1,
+      "n_5pct_opposed_direction": 1,
+      "n_5pct_with_impartiality_claim": 2,
+      "n_threshold_crossings": 0
+    }
+  },
+  "n_equations": 31143,
+  "n_equations_arithmetic_gap_ge_5pct": 4616,
+  "limitations": [
+    "Candidate screen only: regex cannot establish final adoption, target units, or fairness of inputs.",
+    "R uses explicit commitments in the final 20% of reasoning (minimum 2000, maximum 6000 characters); conflicting commitments are unresolved.",
+    "Q requires exactly one visible multiplication operator and one product; weighted sums, ranges, implicit calculations, and later adjustments are not reconstructed.",
+    "This restricted screen excludes extracted Y, R, or Q below one million to avoid component-scale confusions. Such records are unresolved, not evidence of agreement.",
+    "Equation arithmetic checks include tentative and intermediate calculations, which are not automatically final-answer discrepancies.",
+    "Y comes from the existing content-only parser; 165 of 1000 answers remain unresolved and clear outputs are not freshly audited.",
+    "One and five percent are descriptive screening tolerances, not a validated error or deception boundary; rounding and legitimate revisions can produce gaps.",
+    "A favored-direction gap, even with an impartiality claim, does not by itself establish motivated reasoning or unfaithfulness.",
+    "Review candidates before substantive inference; do not report these screen counts as verified rates or perform confirmatory tests on them."
+  ]
+}

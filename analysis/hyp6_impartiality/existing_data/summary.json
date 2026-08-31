@@ -1,0 +1,168 @@
+{
+  "status": "exploratory_existing_data_analysis",
+  "seed": 46062030,
+  "bootstrap_resamples": 10000,
+  "n_selected": 1000,
+  "n_answers": 841,
+  "n_corrections": 9,
+  "equal_model_log_mean_difference": 0.14115490270962283,
+  "equal_model_ci_log": [
+    0.09033020805752959,
+    0.19041909540911328
+  ],
+  "baseline_regions": {
+    "qwen3.5-122b-a10b_20260815_030702": {
+      "n_total": 100,
+      "n_usable": 100,
+      "n_missing": 0,
+      "quartiles": [
+        30480000.0,
+        41000000.0,
+        54115000.0
+      ],
+      "min": 12000000.0,
+      "max": 425000000.0,
+      "exact_mode_count": 5,
+      "n_unique": 64
+    },
+    "minimax-m3_20260815_030703": {
+      "n_total": 100,
+      "n_usable": 100,
+      "n_missing": 0,
+      "quartiles": [
+        36000000.0,
+        50000000.0,
+        108500000.0
+      ],
+      "min": 23000000.0,
+      "max": 1100000000.0,
+      "exact_mode_count": 11,
+      "n_unique": 41
+    },
+    "deepseek-v4-pro-0813_20260815_030703": {
+      "n_total": 100,
+      "n_usable": 99,
+      "n_missing": 1,
+      "quartiles": [
+        25000000.0,
+        30000000.0,
+        34150000.0
+      ],
+      "min": 23800000.0,
+      "max": 70000000.0,
+      "exact_mode_count": 15,
+      "n_unique": 46
+    },
+    "deepseek-v4-flash-0731_20260815_030703": {
+      "n_total": 100,
+      "n_usable": 100,
+      "n_missing": 0,
+      "quartiles": [
+        23600000.0,
+        23700000.0,
+        23770000.0
+      ],
+      "min": 21330000.0,
+      "max": 36000000.0,
+      "exact_mode_count": 35,
+      "n_unique": 25
+    },
+    "inkling-small_20260815_192811": {
+      "n_total": 100,
+      "n_usable": 100,
+      "n_missing": 0,
+      "quartiles": [
+        68587500.0,
+        120000000.0,
+        300000000.0
+      ],
+      "min": 18000000.0,
+      "max": 1600000000.0,
+      "exact_mode_count": 10,
+      "n_unique": 36
+    },
+    "glm-5p2_20260815_030703": {
+      "n_total": 100,
+      "n_usable": 100,
+      "n_missing": 0,
+      "quartiles": [
+        17182500.0,
+        20874000.0,
+        31110000.0
+      ],
+      "min": 4095000.0,
+      "max": 102000000.0,
+      "exact_mode_count": 7,
+      "n_unique": 62
+    },
+    "claude-opus-4-7_20260815_042213": {
+      "n_total": 100,
+      "n_usable": 99,
+      "n_missing": 1,
+      "quartiles": [
+        25000000.0,
+        30000000.0,
+        42500000.0
+      ],
+      "min": 23400000.0,
+      "max": 60000000.0,
+      "exact_mode_count": 15,
+      "n_unique": 25
+    },
+    "inkling_20260815_030703": {
+      "n_total": 100,
+      "n_usable": 100,
+      "n_missing": 0,
+      "quartiles": [
+        35000000.0,
+        40000000.0,
+        50000000.0
+      ],
+      "min": 23000000.0,
+      "max": 110000000.0,
+      "exact_mode_count": 9,
+      "n_unique": 32
+    },
+    "qwen3p8-2p4t-a95b_20260815_030703": {
+      "n_total": 100,
+      "n_usable": 88,
+      "n_missing": 12,
+      "quartiles": [
+        29397500.0,
+        39500000.0,
+        59250000.0
+      ],
+      "min": 11300000.0,
+      "max": 100000000.0,
+      "exact_mode_count": 5,
+      "n_unique": 59
+    },
+    "kimi-k3_20260815_030702": {
+      "n_total": 100,
+      "n_usable": 99,
+      "n_missing": 1,
+      "quartiles": [
+        30000000.0,
+        39600000.0,
+        46500000.0
+      ],
+      "min": 17000000.0,
+      "max": 108000000.0,
+      "exact_mode_count": 10,
+      "n_unique": 44
+    }
+  },
+  "limitations": [
+    "Retrospective, not preregistered; bootstrap assumes independent exchangeable responses within each observed cell.",
+    "Unresolved answers are excluded, not random by assumption. Original answer parsing is only partially source-audited.",
+    "Per-model 95% intervals are marginal, not multiplicity-adjusted confirmatory tests.",
+    "Compare all parseable responses without conditioning on post-treatment claim labels.",
+    "The judge includes normative impartiality commitments, not only retrospective denials of actual influence.",
+    "Baseline quartile regions describe familiar answer ranges, not verified modes or discrete internal choices; ties enter the lower region. Baseline q50 often equals the donation threshold, so quartile composition is not independent of threshold side.",
+    "Missingness intervals are bounds on above-threshold answer rates only; they do not bound the log mean or geometric mean.",
+    "Baseline estimates use existing original extraction, not a newly audited ground truth.",
+    "Rounding counts are automated candidates requiring source review: one explicit product plus rounding wording does not establish final adoption.",
+    "Upward and downward rounding are neither inherently faithful nor biased; omitted precision and starting-value composition can explain direction.",
+    "No new generations, external API calls, or intervention; cannot uniquely identify moral intent or causal CoT unfaithfulness."
+  ]
+}

@@ -1,0 +1,150 @@
+Traceback (most recent call last):
+  File "/Users/shlok/value-leakage/.venv/lib/python3.12/site-packages/anyio/streams/tls.py", line 187, in _call_sslobject_method
+    result = func(*args)
+             ^^^^^^^^^^^
+  File "/Users/shlok/.local/share/uv/python/cpython-3.12.13-macos-aarch64-none/lib/python3.12/ssl.py", line 870, in read
+    v = self._sslobj.read(len)
+        ^^^^^^^^^^^^^^^^^^^^^^
+ssl.SSLWantReadError: The operation did not complete (read) (_ssl.c:2580)
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "/Users/shlok/.local/share/uv/python/cpython-3.12.13-macos-aarch64-none/lib/python3.12/asyncio/runners.py", line 118, in run
+    return self._loop.run_until_complete(task)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/shlok/.local/share/uv/python/cpython-3.12.13-macos-aarch64-none/lib/python3.12/asyncio/base_events.py", line 691, in run_until_complete
+    return future.result()
+           ^^^^^^^^^^^^^^^
+  File "/Users/shlok/value-leakage/analysis/hyp6_impartiality/pilot/run_pilot.py", line 284, in judge_all
+    results = await asyncio.gather(
+              ^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/shlok/value-leakage/analysis/hyp6_impartiality/pilot/run_pilot.py", line 263, in judge_one
+    response = await _call_judge(client, messages)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/shlok/value-leakage/.venv/lib/python3.12/site-packages/tenacity/asyncio/__init__.py", line 193, in async_wrapped
+    return await copy(fn, *args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/shlok/value-leakage/.venv/lib/python3.12/site-packages/tenacity/asyncio/__init__.py", line 112, in __call__
+    do = await self.iter(retry_state=retry_state)
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/shlok/value-leakage/.venv/lib/python3.12/site-packages/tenacity/asyncio/__init__.py", line 157, in iter
+    result = await action(retry_state)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/shlok/value-leakage/.venv/lib/python3.12/site-packages/tenacity/_utils.py", line 111, in inner
+    return call(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/shlok/value-leakage/.venv/lib/python3.12/site-packages/tenacity/__init__.py", line 393, in <lambda>
+    self._add_action_func(lambda rs: rs.outcome.result())
+                                     ^^^^^^^^^^^^^^^^^^^
+  File "/Users/shlok/.local/share/uv/python/cpython-3.12.13-macos-aarch64-none/lib/python3.12/concurrent/futures/_base.py", line 449, in result
+    return self.__get_result()
+           ^^^^^^^^^^^^^^^^^^^
+  File "/Users/shlok/.local/share/uv/python/cpython-3.12.13-macos-aarch64-none/lib/python3.12/concurrent/futures/_base.py", line 401, in __get_result
+    raise self._exception
+  File "/Users/shlok/value-leakage/.venv/lib/python3.12/site-packages/tenacity/asyncio/__init__.py", line 116, in __call__
+    result = await fn(*args, **kwargs)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/shlok/value-leakage/analysis/hyp6_impartiality/pilot/run_pilot.py", line 235, in _call_judge
+    return await call_api(
+           ^^^^^^^^^^^^^^^
+  File "/Users/shlok/value-leakage/.venv/lib/python3.12/site-packages/tenacity/asyncio/__init__.py", line 193, in async_wrapped
+    return await copy(fn, *args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/shlok/value-leakage/.venv/lib/python3.12/site-packages/tenacity/asyncio/__init__.py", line 112, in __call__
+    do = await self.iter(retry_state=retry_state)
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/shlok/value-leakage/.venv/lib/python3.12/site-packages/tenacity/asyncio/__init__.py", line 157, in iter
+    result = await action(retry_state)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/shlok/value-leakage/.venv/lib/python3.12/site-packages/tenacity/_utils.py", line 111, in inner
+    return call(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/shlok/value-leakage/.venv/lib/python3.12/site-packages/tenacity/__init__.py", line 393, in <lambda>
+    self._add_action_func(lambda rs: rs.outcome.result())
+                                     ^^^^^^^^^^^^^^^^^^^
+  File "/Users/shlok/.local/share/uv/python/cpython-3.12.13-macos-aarch64-none/lib/python3.12/concurrent/futures/_base.py", line 449, in result
+    return self.__get_result()
+           ^^^^^^^^^^^^^^^^^^^
+  File "/Users/shlok/.local/share/uv/python/cpython-3.12.13-macos-aarch64-none/lib/python3.12/concurrent/futures/_base.py", line 401, in __get_result
+    raise self._exception
+  File "/Users/shlok/value-leakage/.venv/lib/python3.12/site-packages/tenacity/asyncio/__init__.py", line 116, in __call__
+    result = await fn(*args, **kwargs)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/shlok/value-leakage/src/value_leakage/api/openrouter/chat_completions.py", line 89, in call_api
+    return await client.beta.chat.completions.parse(
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/shlok/value-leakage/.venv/lib/python3.12/site-packages/openai/resources/chat/completions/completions.py", line 1804, in parse
+    return await self._post(
+           ^^^^^^^^^^^^^^^^^
+  File "/Users/shlok/value-leakage/.venv/lib/python3.12/site-packages/openai/_base_client.py", line 1995, in post
+    return await self.request(cast_to, opts, stream=stream, stream_cls=stream_cls)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/shlok/value-leakage/.venv/lib/python3.12/site-packages/openai/_base_client.py", line 1712, in request
+    response = await self._send_request(
+               ^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/shlok/value-leakage/.venv/lib/python3.12/site-packages/openai/_client.py", line 1244, in _send_request
+    response = await self._send_with_auth_retry(request, stream=stream, **kwargs)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/shlok/value-leakage/.venv/lib/python3.12/site-packages/openai/_client.py", line 1223, in _send_with_auth_retry
+    response = await super()._send_request(request, stream=stream, **kwargs)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/shlok/value-leakage/.venv/lib/python3.12/site-packages/openai/_base_client.py", line 1631, in _send_request
+    return await self._client.send(request, stream=stream, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/shlok/value-leakage/.venv/lib/python3.12/site-packages/httpx2/_client.py", line 1832, in send
+    raise exc
+  File "/Users/shlok/value-leakage/.venv/lib/python3.12/site-packages/httpx2/_client.py", line 1826, in send
+    await response.aread()
+  File "/Users/shlok/value-leakage/.venv/lib/python3.12/site-packages/httpx2/_models.py", line 976, in aread
+    self._content = b"".join([part async for part in parts])
+                             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/shlok/value-leakage/.venv/lib/python3.12/site-packages/httpx2/_models.py", line 993, in aiter_bytes
+    async for raw_bytes in raw_stream:
+  File "/Users/shlok/value-leakage/.venv/lib/python3.12/site-packages/httpx2/_models.py", line 1049, in aiter_raw
+    async for raw_stream_bytes in stream:
+  File "/Users/shlok/value-leakage/.venv/lib/python3.12/site-packages/httpx2/_client.py", line 165, in __aiter__
+    async for chunk in stream:
+  File "/Users/shlok/value-leakage/.venv/lib/python3.12/site-packages/httpx2/_transports/default.py", line 266, in __aiter__
+    async for part in self._httpcore_stream:
+  File "/Users/shlok/value-leakage/.venv/lib/python3.12/site-packages/httpcore2/_async/connection_pool.py", line 426, in __aiter__
+    async for chunk in iterator:
+  File "/Users/shlok/value-leakage/.venv/lib/python3.12/site-packages/httpcore2/_async/http11.py", line 320, in __aiter__
+    raise exc
+  File "/Users/shlok/value-leakage/.venv/lib/python3.12/site-packages/httpcore2/_async/http11.py", line 312, in __aiter__
+    async for chunk in iterator:
+  File "/Users/shlok/value-leakage/.venv/lib/python3.12/site-packages/httpcore2/_async/http11.py", line 188, in _receive_response_body
+    event = await self._receive_event(timeout=timeout)
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/shlok/value-leakage/.venv/lib/python3.12/site-packages/httpcore2/_async/http11.py", line 200, in _receive_event
+    data = await self._network_stream.read(self.READ_NUM_BYTES, timeout=timeout)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/shlok/value-leakage/.venv/lib/python3.12/site-packages/httpcore2/_backends/anyio.py", line 37, in read
+    return await self._stream.receive(max_bytes=max_bytes)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/shlok/value-leakage/.venv/lib/python3.12/site-packages/anyio/streams/tls.py", line 254, in receive
+    data = await self._call_sslobject_method(self._ssl_object.read, max_bytes)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/shlok/value-leakage/.venv/lib/python3.12/site-packages/anyio/streams/tls.py", line 194, in _call_sslobject_method
+    data = await self.transport_stream.receive()
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/shlok/value-leakage/.venv/lib/python3.12/site-packages/anyio/_backends/_asyncio.py", line 1337, in receive
+    await self._protocol.read_event.wait()
+  File "/Users/shlok/.local/share/uv/python/cpython-3.12.13-macos-aarch64-none/lib/python3.12/asyncio/locks.py", line 212, in wait
+    await fut
+asyncio.exceptions.CancelledError
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "/Users/shlok/value-leakage/analysis/hyp6_impartiality/pilot/run_pilot.py", line 479, in <module>
+    main()
+  File "/Users/shlok/value-leakage/analysis/hyp6_impartiality/pilot/run_pilot.py", line 470, in main
+    results, elapsed = asyncio.run(judge_all(selection))
+                       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/shlok/.local/share/uv/python/cpython-3.12.13-macos-aarch64-none/lib/python3.12/asyncio/runners.py", line 195, in run
+    return runner.run(main)
+           ^^^^^^^^^^^^^^^^
+  File "/Users/shlok/.local/share/uv/python/cpython-3.12.13-macos-aarch64-none/lib/python3.12/asyncio/runners.py", line 123, in run
+    raise KeyboardInterrupt()
+KeyboardInterrupt
