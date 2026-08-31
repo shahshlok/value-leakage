@@ -66,4 +66,4 @@ Wording asymmetry between mirrored prompts (the main alternative reading); histo
 
 ## Reproducibility
 
-All analyses are offline and deterministic (fixed seeds); headline numbers independently recomputed twice; full artifact map, scripts, and per-trace data in the repo (`FINAL_REPORT.md` and `analysis/` — hyp1 anchoring control, hyp6 measurement study, hyp7 diagnostic study, hyp8 decomposition probe).
+All analyses are offline and deterministic (fixed seeds); headline numbers independently recomputed twice. Full code, per-trace artifacts, and detailed reports: **https://github.com/shahshlok/value-leakage** (fork of the original replication codebase; start with `FINAL_REPORT.md`, then `analysis/` — hyp1 anchoring control, hyp6 measurement study, hyp7 diagnostic study, hyp8 decomposition probe).
