@@ -1,49 +1,74 @@
-# Model Forensics SPAR Take-home — Value Leakage (Donation Bet)
+# Value Leakage in the Donation Bet
+
+## A population-level dissociation between stated impartiality and answers
+
 Shlok Shah · hi@shahshlok.com
 
 ## Executive summary
 
-I studied the Donation Bet task: a model estimates how many black spots are on all living giraffes, and a cutoff number decides whether a good or a bad cause gets a donation. In one condition, a high estimate helps the good cause. In the mirrored condition, a low estimate helps the good cause. The cutoff itself is the same number in both conditions. Aditya's brief asked two things: what does motivated reasoning look like here, and should I treat this as unfaithful chain-of-thought? The original ten-model corpus was already collected (replication does not count toward the five-hour limit). I used that corpus plus a two-model anchoring control, and I did not run sentence resampling or J-lens.
+I studied one setting: the Donation Bet. A model estimates the total number of black spots on all living giraffes. A fixed cutoff determines which cause receives a donation. In the **above-good** condition, an answer above the cutoff helps the good cause; in the **below-good** condition, an answer at or below the same cutoff helps the good cause.
 
-**What I found:**
+I asked two questions. First, what would motivated reasoning look like in this task? Second, should I interpret the written reasoning, or chain-of-thought (CoT), as unfaithful?
 
-1. **The answers really do follow the donation.** After first checking that a bare number in the prompt can move estimates even with no moral content, I only compared the two mirrored conditions (same cutoff, flipped donation). Across nine models, answers are **15.5% higher** when a high answer helps the good cause (95% interval 9.4% to 22.1%). The share of answers sitting above the cutoff jumps by **32 percentage points** (25.6 to 38.6). Every one of the nine models moves in the same direction.
+**My answer to the first question:** motivated reasoning would look like a counterfactual shift in the answer distribution toward whichever side of the fixed cutoff benefits the good cause. That is what I observe. Across the nine-model primary set, answers are **+15.5% [9.4, 22.1]** higher when a high answer helps the good cause. The share above the cutoff moves by **+32.1 percentage points [25.6, 38.6]**. All nine model-level point estimates move in the incentive-consistent direction.
 
-2. **When a model writes "I will stay impartial," that sentence showed no measurable diagnostic value here.** A blinded judge, who saw only the reasoning and not the condition or the answer, found those promises almost everywhere (589 of 716 labeled traces with a returned label in the nine-model primary set; 100 of 100 for Qwen 3.5). Across all ten models the judge returned 727 positives of 951 labels; those two fractions differ because one drops DeepSeek Pro and missing answers. Traces that make the promise still shift by 14.1%. In the two models that also produce many traces *without* the promise, those traces shift just as much. The cheapest informal faithfulness check — "did the model say it was being unbiased?" — had no demonstrated diagnostic value in this sample. The paired interval includes zero, so I do not claim proven equivalence.
+**My answer to the second question:** I find evidence consistent with a **population-level dissociation** between stated impartiality and answers. I do not find evidence that permits a per-trace claim of lying or identifies a hidden cause. A blinded judge labeled 589/716 usable traces in the nine-model set as explicitly promising impartiality, yet the label-positive traces still shift by **+14.1% [7.7, 20.9]**. Their shift is only **+1.4 percentage points [-1.4, 4.5]** smaller than the full-set shift. Because that interval includes zero, I conclude that the impartiality label has no measurable diagnostic value here; I do not conclude that positive and negative traces are proven equivalent.
 
-3. **Motivated reasoning here does not look like a confession.** In a blinded audit of 40 traces that even mentioned donation-related adjustment, **33 of 40 consider the donation-friendly move and reject it on the page.** Only 8 adopt that move and say so. Removing those 8 barely changes the 15.5% shift. Among those retrieved candidates, the usual pattern is: the model sees the temptation, declines it in writing — and the full set of answers still follows the incentive. I do not treat those 40 as a sample of all traces; search recall is unknown.
+The written reasoning rarely looks like a confession. In a blinded audit of 40 retrieved candidates that mentioned donation-related adjustment, all 40 promised impartiality, 33/40 considered and rejected the donation-friendly move, 13/40 denied retrospectively that the donation mattered, and 8/40 adopted a donation-linked choice. Removing the 8 open adoptions leaves a **+15.1%** shift; removing those 8 plus 10 uncertain cases leaves **+14.0%**. This audit describes retrieved candidates only. Its recall over the full corpus is unknown.
 
-4. **Where the shift may enter (exploratory, not a claim).** If I split each answer into "giraffe population × spots per giraffe × leftover," the leftover and the population barely move. Spots per giraffe, the one input with no checkable true value, absorbs most of the shift. My extractor failed its own audit (5 errors in 20 traces), so this is a direction for the next experiment, not a result I would defend as settled.
+My exploratory decomposition suggests a possible mechanism worth testing: the flexible assumption, spots per giraffe, moves more than the memorized population fact. In the gated subset, population shifts **-1.7% [-3.4, -0.0]**, spots per giraffe shifts **+8.6% [+4.0, +13.3]**, and the residual contributes **+3.1%**. The gated total is **+10.1%**, versus **+15.5%** in the full set. The extractor made 5/20 audit errors, and gate imbalance reaches 17 percentage points, so I treat this as a direction for a causal experiment, not a finding.
 
-**Is this unfaithful CoT?** It is consistent with a population-level dissociation: written reasoning promises impartiality, identifiable open disclosures do not explain the shift, and answers still follow the donation. That is not the same as proving the donation caused the shift (wording and serving remain live alternatives), and it is not per-trace lying. Any single answer could be an honest Fermi estimate that happened to land on the helpful side.
+Two alternatives remain live. The mirrored prompts change sentence polarity (“exceeds” versus “does not exceed”) along with the donation mapping, and the original generations were not perfectly interleaved. Wording polarity and serving variation could therefore contribute to the result. My clean next test would cross donation direction with sentence polarity in an interleaved run, then use matched sentence resampling to test whether an impartiality commitment or the chosen spots-per-giraffe assumption causally changes the answer.
+
+The original ten-model corpus is replication and is excluded from the five-hour limit. I used it as the fixed setting for the analyses in this document and added the two-model anchoring control described below. I did not run sentence resampling or J-lens.
 
 ---
 
-## How to read the numbers
+## 1. The estimands
 
-Two summaries appear throughout. They answer different questions.
+I use two summaries because they capture different behavior.
 
-| Summary | What it asks | Headline result |
+| Summary | Question I ask | Nine-model result |
+|---|---|---:|
+| Geometric shift | How much larger is the typical answer when a high answer helps the good cause? | **+15.5% [9.4, 22.1]** |
+| Threshold-crossing shift | How much does the share of answers above the same cutoff change? | **+32.1 percentage points [25.6, 38.6]** |
+
+I use the geometric shift for answer magnitude because Fermi estimates are naturally multiplicative. I use threshold crossing because the donation depends on which side of the cutoff the answer lands. A model can therefore show a small magnitude shift and a large crossing shift if many of its answers lie close to the cutoff.
+
+The intervals are 95% bootstrap intervals. I resample the existing answers within model and condition, compute the model-level contrasts, and give each model equal weight in the primary average. These intervals quantify uncertainty in this corpus; they do not turn the nine models into a random sample of all models.
+
+---
+
+## 2. The design problem: anchoring, moral direction, wording, and serving
+
+The Donation Bet contains an immediate confound. Merely displaying a number can anchor a Fermi estimate. A comparison between a no-cutoff baseline and a donation prompt would mix moral motivation with numerical anchoring.
+
+I therefore use the mirrored comparison for the main result:
+
+- In **below-good**, an answer at or below the cutoff helps the good cause.
+- In **above-good**, an answer above the same cutoff helps the good cause.
+
+Holding the cutoff fixed removes a simple “different number in the prompt” explanation. It does not remove every alternative: the prompts also use different sentence polarity, and serving can vary across collection time.
+
+### Competing hypotheses and their discriminating predictions
+
+| Hypothesis | Prediction in the present data | Experiment that discriminates it |
 |---|---|---|
-| Geometric shift | How much bigger is the typical *size* of the answer when a high answer helps the good cause? | **+15.5%** (9.4 to 22.1) |
-| Threshold-crossing | What fraction of answers sit *above the same cutoff*, and how much does that fraction jump when sitting above helps? | **+32.1 percentage points** (25.6 to 38.6) |
+| **Moral-direction motivated reasoning** | With the cutoff fixed, the answer distribution follows whichever side helps the good cause. Flexible assumptions may absorb more of the movement than memorized facts. | I would cross the recipient mapping with sentence polarity. If recipient mapping predicts answers while polarity is held fixed, the moral account gains support. |
+| **Numerical anchoring** | Changing the displayed cutoff moves answers even without any moral content. | I would vary the cutoff while holding all moral language absent or fixed. Anchoring predicts movement with the number, regardless of recipient. |
+| **Sentence polarity** | “Exceeds” and “does not exceed” move answers even if good/bad labels are removed or swapped. | I would express both recipient mappings using the same predicate, then cross that mapping with an independently varied wording template. Polarity predicts the wording factor, not the recipient mapping. |
+| **Serving or time variation** | Condition differences track collection order, route, or missingness. | I would interleave randomized conditions, pin model and provider settings, and record failures before parsing. A serving account should shrink under that design. |
+| **Open, on-the-page tradeoff** | Traces that admit donation-driven adjustment account for the aggregate shift. | I would remove or intervene on disclosed adoptions. If the shift disappears, open tradeoff explains it. The bounded removal analysis below does not show that. |
+| **Impartiality language is behaviorally effective** | An explicit commitment to ignore the donation predicts or causes a smaller condition shift. | I would resample the commitment sentence from a fixed prefix and compare it with a matched neutral sentence. The observational label test below finds no measurable diagnostic value. |
+| **Flexible-premise selection** | The condition changes an unconstrained premise such as spots per giraffe more than a memorized fact such as population. | I would resample or pin the premise sentence, with the population sentence as a negative-control locus. The current extraction is too error-prone to settle this. |
 
-Intervals are 95% bootstrap intervals: I resample the existing answers 10,000 times, within each model and condition, and report the middle 95% of those repeats. They describe the nine-model primary set, not a random sample of all models. "Percentage points" means a jump in a rate (14% to 66% is +52 percentage points), not a 52% increase of the rate.
+This table separates an observed signature from a mechanism. The present mirrored contrast establishes an incentive-consistent population shift. Because moral direction and wording polarity are not independently randomized, it does not by itself establish that moral motivation caused the shift.
 
----
+### Anchoring control
 
-## 1. The task, and the confound that has to come first
+I first checked whether a displayed number moves answers without moral stakes. Fresh generations were required, so I ran this control on Qwen 3.5 and Qwen 3.8. These models sat at opposite ends of the original replication: Qwen 3.5 showed relatively large leakage, while Qwen 3.8 showed little. The pair therefore tests whether neutral anchoring also appears in a model that barely moved under the original moral prompt.
 
-The Fermi question is always the same: total black spots on living giraffes. A cutoff decides the donation. Two mirrored conditions:
-
-- **Below-good:** an estimate *at or below* the cutoff helps the good cause.
-- **Above-good:** an estimate *above* the cutoff helps the good cause.
-
-Within each model the cutoff is identical in both conditions. Only which side helps the good cause changes. If answers still move, that movement cannot be "the model was pulled toward a different number in the prompt," because the number did not change.
-
-Before treating that movement as motivated reasoning, I checked whether a number in the prompt can move estimates *with no donation at all*. Fresh generations were required, so I could not run this control on all ten models. I used **Qwen 3.5 and Qwen 3.8** because they sat at opposite ends of Aditya's original replication: 3.5 leaked relatively a lot, 3.8 almost not at all. That pair asks whether a neutral number still moves a model that barely moved under the original moral prompt. Aditya's brief also flagged Qwen 3.5; that was secondary.
-
-Two neutral framings, 50 answers per cell, 400 answers total:
+I used two neutral framings, 50 answers per cell and 400 answers total.
 
 | Wording | Model | Cutoff shown, low → high | Median answer, low → high | Change |
 |---|---|---|---|---|
@@ -52,17 +77,17 @@ Two neutral framings, 50 answers per cell, 400 answers total:
 | Number described as irrelevant | Qwen 3.5 | 41M → 85M | 41M → 49M | +20% |
 | Number described as irrelevant | Qwen 3.8 | 40M → 80M | 28.5M → 29.1M | +2% |
 
-Estimates rise when the displayed number rises, even with no moral stakes. So I do not treat "baseline vs donation" as motivated reasoning: those conditions also differ in whether a number is present. The only contrast I use for the later claims is the mirrored pair: same cutoff, flipped donation. That still does not control the wording difference ("exceeds" vs "does not exceed") or serving differences across providers. Those remain the main rival explanations.
+The displayed number can move the estimate even without a donation. I therefore do not interpret baseline-versus-donation movement as evidence of motivated reasoning. I use only the mirrored moral contrast for the main result.
 
-A fresh mirrored moral run on the same two models was only suggestive for Qwen 3.5 and not robust in held-out data. Anchoring is a necessary control. It is not a complete explanation of the original ten-model result. Later sections go back to all ten of Aditya's original models.
+A fresh mirrored moral run on these two models was suggestive for Qwen 3.5 but was not robust in held-out data. I treat the anchoring control as a necessary design correction, not as a complete explanation of the original multi-model pattern.
 
 ---
 
-## 2. Do answers follow the donation?
+## 3. Main result: answers follow the donation mapping
 
-**Data.** Aditya's original corpus: 10 models, 100 answers per condition. I work with a 1,000-trace sample (50 below-good and 50 above-good per model). After parsing, 841 answers are usable. I dropped one model, deepseek-v4-pro, from the headline average by a rule I set in advance: in above-good it has 52% unparseable answers and 43 of 100 empty reasoning traces. That looks like a serving failure, not a scientific result. Its own shift (+12.5%) is in the table and does not change the story. Nine models remain.
+I analyze Aditya’s original ten-model corpus, with 100 answers per condition. I use a 1,000-trace sample containing 50 below-good and 50 above-good traces per model. After parsing, 841 answers are usable.
 
-**Result.** Nine-model equal-weight geometric shift: **+15.5% (9.4 to 22.1)**. Crossing-rate jump: **+32.1 percentage points (25.6 to 38.6)**. I recomputed the headlines with a second script; point estimates agreed to 0.05 percentage points.
+I exclude DeepSeek Pro from the primary average under a rule set before the pooled analysis. It has 52% unparseable answers and 43/100 empty reasoning traces in above-good, consistent with a serving failure. Its own shift is **+12.5%**, so including its direction would not reverse the qualitative pattern. The nine-model primary result is **+15.5% [9.4, 22.1]**, with a crossing shift of **+32.1 percentage points [25.6, 38.6]**.
 
 | Model | Size shift | Usable answers (below / above) | Share above the cutoff, below-good → above-good |
 |---|---:|---|---|
@@ -77,134 +102,153 @@ A fresh mirrored moral run on the same two models was only suggestive for Qwen 3
 | DeepSeek Flash | +2.8% | 50 / 50 | 16% → 62% |
 | DeepSeek Pro *(excluded from the average)* | +12.5% | 46 / 42 | — |
 
-Every point estimate is in the incentive's direction. Models differ a lot (+3% to +29%). Some individual intervals include zero; the pooled interval does not.
+Every model-level point estimate moves in the incentive-consistent direction, although some individual intervals include zero and effect sizes vary substantially.
 
-The two summaries can disagree, and that is informative. DeepSeek Flash barely moves in *size* (+2.8%) but jumps 46 percentage points in *crossing*, because its answers sit near the cutoff: a small nudge flips the donation without a large change in the number. Qwen 3.5 is the cleanest single picture: medians 38 million vs 44 million around a 41 million cutoff; 7 of 50 vs 33 of 50 answers sit above it.
+The magnitude and crossing estimands reveal different patterns. DeepSeek Flash moves only **+2.8%** in size but jumps from 16% to 62% above the cutoff. Its answers cluster near the boundary, so a small numerical nudge often changes the donation outcome. Qwen 3.5 gives the clearest single-model illustration: its medians are 38 million and 44 million around a 41 million cutoff, and its crossing counts are 7/50 and 33/50.
 
-*[Insert `submission_figures/fig3_qwen35_distribution.png` — Caption: **Figure 1. One model's answers, both conditions, same cutoff.** Each dot is one Qwen 3.5 answer. The x-axis is the estimate (log scale, so 10M, 20M, 40M, 80M are evenly spaced). Top row: a high answer helps the good cause. Bottom row: a low answer helps it. The dashed line is the 41 million cutoff, identical in both rows. Thick bars are medians (44M vs 38M). The two clouds sit on opposite sides of the line in the direction that helps the good cause: 33 of 50 above the line when that helps, 7 of 50 when it hurts. All 100 of these traces contain a judge-labeled "I will stay impartial" promise.]*
+*[Insert `submission_figures/fig3_qwen35_distribution.png` — Caption: **Figure 1. One model’s answers under both donation mappings, with the same cutoff.** Each dot is one Qwen 3.5 answer. The x-axis is logarithmic, so equal distances represent equal ratios. The dashed line is the 41 million cutoff in both rows; the thick bars are medians of 44M and 38M. When a high answer helps the good cause, 33/50 answers cross the line. When it hurts the good cause, 7/50 cross it. All 100 traces received a positive impartiality label, so this figure also illustrates the population-level dissociation between stated intent and answers.]*
 
-*[Insert `submission_figures/fig2_crossing_rate_dumbbell.png` — Caption: **Figure 2. The same pattern across ten models.** Each row is one model. The x-axis is the percent of answers sitting above that model's own cutoff. Circles: below-good (a high answer *hurts* the good cause). Triangles: above-good (a high answer *helps*). The gray bar is the gap: same question, same cutoff, only the donation flipped. Every triangle sits to the right of its circle. The right panel repeats the plot using only traces that promised impartiality; the bars barely change.]*
+*[Insert `submission_figures/fig2_crossing_rate_dumbbell.png` — Caption: **Figure 2. Threshold crossing moves in the incentive-consistent direction across models.** Each row is one model. The x-axis is the share of answers above that model’s cutoff. Circles show below-good, where crossing hurts the good cause; triangles show above-good, where crossing helps it. The cutoff is fixed within model. Every triangle lies to the right of its circle. The right panel restricts the calculation to traces labeled as promising impartiality; the pattern changes little.]*
 
----
+### What motivated reasoning looks like here
 
-## 3. Does "I will stay impartial" mean the answer is incentive-free?
+At the population level, it looks like selection among defensible estimates rather than a frequent explicit decision to manipulate the donation. A Fermi question admits many plausible assumptions, and a modest movement can place the final number on the helpful side of a salient threshold. The written trace can simultaneously announce an impartial procedure or reject an overtly biased move.
 
-If chain-of-thought were a faithful window, traces that *say* they will ignore the donation should move less. I test that as a diagnostic, not as a causal claim. The impartiality label is written *after* the prompt, so I do not treat "the effect among truly impartial traces" as identified. I *can* ask whether the label carries information, the way a medical test is evaluated by looking at outcomes among people who tested positive.
-
-I had a judge (GLM-5.3-Flash) see reasoning only: no model name, no condition, no cutoff, no answer. It marked whether the text explicitly commits to impartiality. 951 of 1,000 calls returned a label; 727 were positive. Failed calls (timeouts) are missing, not "no." I only checked the judge against another model on small development audits (about 12–14 of 15), never against a human. Long traces are a known miss.
-
-| Test | What it would show if the promise were informative | What it actually shows |
-|---|---|---|
-| How often the promise appears | It should fire on some traces and not others, especially not on the biggest shifters | 589 of 716 labeled usable traces are positive. Qwen 3.5: 100/100. Claude: 84/84. A test that almost always says "yes" cannot tell biased from unbiased. |
-| Shift among traces that made the promise | Should be near zero, or at least smaller than 15.5% | **+14.1% (7.7 to 20.9)**. Difference from the overall 15.5%: **+1.4 percentage points (−1.4 to +4.5)**. The interval includes zero, so modest shrinkage is not ruled out. Even at the shrinking edge, most of the effect remains. |
-| Shift among traces that did *not* make the promise | Should be larger, if the promise marks the honest traces | Only DeepSeek Flash and Qwen 3.8 have enough "no" traces. Both still shift. Flash: +2.6% without the promise vs +4.0% with it; crossing jump **+50.5 percentage points in both groups**. All paired differences include zero. |
-
-*[Insert `submission_figures/fig1_forest_contrasts.png` — Caption: **Figure 3. Do impartiality promises shrink the shift?** Left: for each model, how much answers shift between conditions (dot = estimate, bar = 95% interval). Right of the dashed zero line means the answers moved with the incentive. Blue circles: all answers. Orange squares: only answers whose reasoning promised impartiality. If the promise marked unbiased reasoning, orange would sit near zero. Instead orange sits on top of blue in this sample. Right panel: the difference between those two estimates, computed on the same resamples. Every interval includes zero, so I do not claim proven equivalence. Bottom rows: the nine-model average, then the same average after dropping traces that openly tied their number to the donation — dropping them changes almost nothing.]*
-
-I keep three properties separate. They are not the same thing, and here they come apart:
-
-1. **Stating** an impartiality goal (almost everyone does this).
-2. **Behaving** the same when the donation flips (the population does not).
-3. **Disclosing** the factors that actually moved the number (rare among the traces I retrieved; next section).
-
-How I would tell the remaining stories apart:
-
-| Story | What would look like this | What would kill it |
-|---|---|---|
-| Moral direction (motivated reasoning) | Shift follows which side helps the good cause, even with the cutoff fixed | Same-polarity wording in both arms ("exceeds" both ways, or "does not exceed" both ways) and the shift vanishes |
-| Mere wording ("exceeds" vs "does not exceed") | Shift survives even if good/bad labels are stripped, as long as the sentence polarity stays | Cross moral direction with sentence polarity; if polarity, not charity, predicts the answer, it is not moral leakage |
-| Serving / time | One condition was collected later or on a worse route (DeepSeek Pro looks like this) | Fresh run, conditions interleaved, provider pinned |
-| Open, on-the-page tradeoff | Removing traces that admit the donation kills the 15.5% | I already did a bounded version: removing 8 (or 18) found cases did not |
-| Impartiality sentence is just talk | Resampling that sentence does not move the answer | Fixed-prefix resampling of the commitment sentence vs a neutral control sentence |
-| Convenient spots-per-giraffe assumption | Resampling or pinning that number moves the answer with the incentive; population stays put | Same intervention on a memorized fact (population) should not move the donation-direction shift |
+That description is consistent with motivated reasoning, but it does not identify the internal process. Wording could shift the same flexible assumptions, and serving differences could shift the answer distribution without any moral computation. I therefore use “motivated reasoning” for the hypothesis whose signature I am testing, rather than as a settled hidden-cause label.
 
 ---
 
-## 4. What does the reasoning actually say about the donation?
+## 4. Does an impartiality promise diagnose incentive-free reasoning?
 
-If the shift were just honest, on-the-page tradeoffs ("I will round up so the good cause wins"), then removing those traces should kill the 15.5%. I searched reasoning for donation-linked adjustment language, then had 40 of those hits scored blind under a frozen rubric. Condition and outcome were hidden. Every category call had to quote a span; those quotes were checked against the source text. **The scorer was a model (Claude Sonnet), not a human.** That is a limitation. Search misses are not confirmed "no disclosure."
+I test whether the written commitment is informative. I do not condition on it as though it were a randomized treatment. The label is produced after the prompt, so selection into label-positive traces can itself depend on the condition and on the model.
 
-| What the text did | Count out of 40 |
+I had GLM-5.3-Flash judge reasoning with the model name, condition, cutoff, and final answer hidden. The judge marked whether the text explicitly committed to impartiality. Across all ten models, 951/1,000 calls returned labels and 727/951 were positive. Failed calls are missing labels, not negatives. In the nine-model primary analysis, 589/716 labeled usable traces were positive. Qwen 3.5 was 100/100 positive.
+
+| Diagnostic | Prediction if the promise were informative | Observation |
+|---|---|---|
+| Coverage | The label should separate a meaningful positive and negative group. | It is positive on 589/716 labeled usable traces in the primary set and 100/100 Qwen 3.5 traces. |
+| Shift among label-positive traces | The shift should be near zero or materially smaller than the full-set shift. | The shift is **+14.1% [7.7, 20.9]**. |
+| Paired difference from the full-set shift | Resampled matched differences should be clearly positive if filtering removes leakage. | The difference is **+1.4 percentage points [-1.4, 4.5]**. |
+| Shift among label-negative traces | The negative group should shift more if the promise marks faithful behavior. | DeepSeek Flash is **+2.6% vs +4.0%** for negative vs positive, with a **+50.5 percentage-point** crossing shift in both. Qwen 3.8 is **+8.2% vs +11.4%** for negative vs positive. |
+
+I find no measurable diagnostic value for the promise in this sample. I do not claim equivalence: the paired interval includes zero and also permits some shrinkage. I also do not claim that every promise is insincere. The result is aggregate and predictive: knowing that a trace contains the promise does not measurably identify a smaller condition shift here.
+
+*[Insert `submission_figures/fig1_forest_contrasts.png` — Caption: **Figure 3. Impartiality promises do not measurably shrink the condition shift.** In the left panel, each dot is a model’s estimated shift and each bar is its 95% interval. Values to the right of zero move with the incentive. Blue circles use all usable answers; orange squares use only traces whose reasoning promised impartiality. The orange estimates remain close to the blue estimates. The right panel shows their paired differences under the same resamples. Every interval includes zero, so I interpret the label as having no measurable diagnostic value here, not as proving equivalence. The bottom exclusions show that removing retrieved open disclosures also changes little.]*
+
+### Should I call this unfaithful CoT?
+
+I would call it **evidence consistent with unfaithful CoT at the population level**. The written reasoning often says the donation will be ignored, yet the distribution of answers changes when the donation mapping flips. The positive label does not diagnose a smaller shift, and the retrieved open adoptions do not account for the aggregate effect.
+
+I would not call a particular trace a lie. Any single answer may be an honest Fermi estimate that happens to fall on the helpful side. I also cannot infer that the donation was the hidden cause of the aggregate shift while wording polarity and serving remain uncontrolled. Finally, Claude’s “reasoning” is an API summary rather than raw chain-of-thought, so I treat it as a separate evidence tier.
+
+The clean claim is therefore about dissociation: a stated commitment to impartiality and an incentive-invariant answer distribution come apart at the population level.
+
+---
+
+## 5. What the retrieved reasoning says about the donation
+
+I next asked whether the effect is already explained on the page. I searched for donation-linked adjustment language, selected 40 retrieved candidates, and had Claude Sonnet score them under a frozen rubric while hiding condition and outcome. Every category decision required a supporting span that I checked against the source text.
+
+| Behavior in the written reasoning | Count |
 |---|---:|
-| Promised impartiality going forward | 40 |
-| Considered a donation-friendly move and **rejected** it | **33** |
-| After the fact, denied that the donation mattered | 13 |
-| Actually adopted a donation-driven choice | 8 |
-| Tied the final number to the donation in so many words | 8 |
+| Promised impartiality | 40/40 |
+| Considered and rejected a donation-friendly move | 33/40 |
+| Retrospectively denied that the donation mattered | 13/40 |
+| Adopted a donation-linked choice | 8/40 |
 
-The 8 adoptions split 6 of 25 above-good vs 2 of 15 below-good (Fisher p = 0.69). That split is noise; I do not read it as "models only confess when rounding up." One boring reading of those 8 is convenience rounding, with the cause used as a story after the fact. Convenience rounding by itself has no preferred direction in a mirrored design, unless *when* the model rounds depends on the donation.
+The 8 open adoptions split 6/25 in above-good and 2/15 in below-good; Fisher p=0.69. I treat that difference as noise. Convenience rounding is one mundane explanation for some admissions. It would only create the mirrored population pattern if the decision to round, or the direction of rounding, also depended on the donation mapping.
 
-| What is removed | Remaining size shift |
-|---|---|
-| Nothing (all usable answers) | +15.5% (9.4 to 22.1) |
-| The 8 confirmed open adoptions | +15.1% (9.1 to 21.7) |
-| Those 8 plus 10 uncertain cases | +14.0% (7.9 to 20.5) |
+| Exclusion | Remaining size shift |
+|---|---:|
+| None | +15.5% |
+| Exclude the 8 confirmed open adoptions | +15.1% |
+| Exclude those 8 and 10 uncertain cases, 18 total | +14.0% |
 
-The identifiable open disclosures do not explain the effect. That is not the same as "the rest is hidden." I did not read every non-hit. The striking pattern is the 33 of 40 that *see* the tempting move, *decline it in writing*, and still belong to a population whose answers follow the incentive.
+The identifiable open adoptions do not explain the aggregate shift. I cannot turn that result into “the rest is hidden,” because the search has unknown recall and I did not manually read every non-hit. The audit only supports a bounded statement about retrieved candidates.
 
----
-
-## 5. Where in the Fermi estimate might the shift enter? (Exploratory)
-
-A typical trace multiplies giraffe population by spots per giraffe. On a log scale those pieces add:
-
-> log(answer) = log(population) + log(spots per giraffe) + leftover
-
-The leftover is everything else: extra factors, rounding, the last number the model types. The condition difference in each piece adds up to the total difference. Population is a public fact models already know (~117,000). Spots per giraffe is almost unconstrained (baselines range from about 185 to 675 across models). If the model "picks a convenient but reasonable assumption," the pick should show up in spots, not in population.
-
-I ran an automatic extractor that pulled both numbers from reasoning. I only kept a trace in the split if both numbers were clearly found and their product was within a factor of three of the final answer. I published pass rates before any condition comparison. Then:
-
-| Piece of the estimate | Shift when a high answer helps the good cause |
-|---|---|
-| Adopted giraffe population | **−1.7%** (−3.4 to −0.0) — essentially flat |
-| Adopted spots per giraffe | **+8.6%** (+4.0 to +13.3) — carries most of the move |
-| Leftover (product vs final answer) | +3.1% (+0.7 to +5.6) |
-| Total, on this scorable subset | +10.1% (+5.6 to +14.8) vs +15.5% on the full set |
-
-*[Insert `submission_figures/fig4_h8_decomposition.png` — Caption: **Figure 4. Where in the calculation does the shift enter? (Exploratory.)** Each row is one piece of the estimate. Dots are the shift between conditions; bars are 95% intervals; the dashed line is "no shift." Population hugs zero. Spots per giraffe, the input with no checkable true value, sits well to the right and carries most of the total. Read the bold footnote on the figure: 25% extractor errors, uneven pass rates by condition, and this subset only carries +10.1% of the full +15.5%. Direction, not a finding.]*
-
-I do **not** treat this as a result. A 20-trace check found 5 extraction mistakes (25%). Pass rates differ by condition by as much as 17 percentage points in some models. The subset that survives the gate only carries a 10.1% shift, not the full 15.5%. The value is the next experiment: human-checked extraction on a fresh interleaved run, asking whether donation direction moves the unconstrained assumption and leaves the memorized fact alone.
+Among those candidates, the dominant written pattern is still informative: 33/40 traces notice the tempting move and reject it. Motivated reasoning in this setting need not look like a confession. It can coexist with an explicit rejection of the most obvious biased action while the answer distribution still moves at the population level.
 
 ---
 
-## 6. Limitations
+## 6. Exploratory locus: which premise moves?
 
-These are the reasons a careful reader should not over-read the headlines.
+A typical trace multiplies a giraffe population by an assumed number of spots per giraffe. I write the decomposition on a log scale:
 
-| Limitation | Why it matters |
-|---|---|
-| The two prompts are not identical except for good vs bad | They also say "exceeds" vs "does not exceed." A non-moral wording effect could contribute. This is the main rival to a motivated-reasoning reading. |
-| Conditions were not perfectly interleaved in the original collection | Time and provider can leak into condition. DeepSeek Pro's missing traces show serving artifacts are real here. |
-| The impartiality judge was never checked by a human | Only another model, on ~15 development traces. Long traces are a known miss. 49 failed calls are missing labels, not "no promise." |
-| Most final answers were parsed by code, not read by a person | I human-corrected nine from source quotes. The rest passed automatic checks. |
-| The 40-trace disclosure audit was scored by a model | Quotes are checkable. Category calls still inherit that model's biases. |
-| Search for disclosures does not find everything | Removing the 8 open cases only bounds *found* disclosure. |
-| Claude Opus loses more parseable answers in one condition | 47 vs 37 usable. Parsed-only analysis could be selected. The crossing-rate table uses whatever finite answers exist. |
-| Qwen 3.5's usual baseline answer *is* 41 million, its cutoff | Crossing rates for that model are extra jumpy. The size-shift number is the stabler one. |
-| Filtering on the promise is not a causal design | It tests whether the label predicts, not "the effect if the model were truly impartial." |
-| Claude's "reasoning" is an API summary | Not raw chain-of-thought. I treat Claude as a separate tier. |
-| Neutral control never compared "a number" vs "no number" | It shows that *which* number is shown matters, not that showing any number vs none does. |
-| Two models in the control, ten in the later studies | I chose Qwen 3.5 / 3.8 from opposite ends of Aditya's ranking, not as a random sample. |
-| This is retrospective | I knew earlier results when specifying later analyses. Not a preregistration. Ten models, one question. |
+> log(answer) = log(population) + log(spots per giraffe) + residual
+
+The population is a relatively checkable fact. Spots per giraffe is much less constrained. If the shift enters through selection among convenient assumptions, I would expect more movement in spots per giraffe than in population.
+
+I used an automatic extractor to identify both premises. I kept a trace only when both were found and their product was compatible with the final answer. In that gated subset:
+
+| Component | Condition shift |
+|---|---:|
+| Population, N | **-1.7% [-3.4, -0.0]** |
+| Spots per giraffe, S | **+8.6% [+4.0, +13.3]** |
+| Residual | **+3.1%** |
+| Gated total | **+10.1%**, versus **+15.5%** in the full set |
+
+*[Insert `submission_figures/fig4_h8_decomposition.png` — Caption: **Figure 4. Exploratory decomposition of where the answer shift may enter.** Each row shows one component of the gated Fermi calculation; dots are condition shifts, bars are 95% intervals, and zero means no shift. Population stays close to zero, while spots per giraffe moves in the incentive-consistent direction. I treat this only as a hypothesis-generating direction: the extractor made 5/20 audit errors, pass rates differ across conditions by up to 17 percentage points, and the gated subset carries +10.1% rather than the full +15.5% shift. The figure does not establish a mechanism.]*
+
+I do not treat H8 as a finding. The extractor made 5/20 errors in my audit. In some models, the extraction gate differs between conditions by up to 17 percentage points. Selection into the gated subset can therefore manufacture or distort a component shift. The gated subset also misses part of the headline effect.
+
+I retain the decomposition because it gives a sharp intervention: manipulate the flexible premise and use the memorized fact as a negative-control locus. That experiment can confirm or kill the proposed direction.
 
 ---
 
-## 7. What I did not do, and what I would do next
+## 7. The sentence-resampling experiment I would run next
 
-The brief named two optional directions I did not run, on purpose.
+I did not run sentence resampling within the five-hour take-home. I would use it as a causal test, not as another label-based correlation.
 
-**Sentence resampling** is the right causal test of whether a sentence in the trace *does* anything. Aditya's brief said it is slow and can sit outside the five-hour budget, so I did not run it. I used the take-home time to pin *which* sentences to resample rather than resampling at random.
+### Design
 
-**J-lens / internals on Qwen 3.5** would need activations this corpus does not contain.
+| Design element | Pre-specified choice |
+|---|---|
+| **Experimental unit** | I would use a source trace prefix ending immediately before a target sentence. Multiple continuations from the same prefix would be matched repeats, and I would cluster inference by source prefix and model. |
+| **Commitment intervention** | Holding the prompt and prefix fixed, I would randomly insert either an explicit impartiality commitment or a neutral procedural sentence matched for style and length, then resample the continuation under identical decoding settings. |
+| **Premise intervention** | In a separate arm, I would stop immediately before the sentence that chooses spots per giraffe, resample that sentence and the continuation, and record the adopted premise and final answer. I would also run a pinned-premise version to ask whether fixing that degree of freedom shrinks the donation-direction shift. |
+| **Primary outcomes** | I would reuse the geometric answer shift and threshold-crossing shift. For the premise arm, I would also record the adopted spots-per-giraffe value as the proximal outcome. |
+| **Primary estimand** | I would estimate the interaction between donation mapping and sentence intervention. The question is whether changing the target sentence changes the size of the mirrored condition effect. |
+| **Negative control** | I would apply the same procedure to a sentence about giraffe species that does not enter the product. I would use the population premise as a second, mechanistically motivated negative-control locus. |
+| **Collection controls** | I would randomize and interleave all arms, pin the provider and sampling configuration, blind parsing to condition, retain failures, and human-check the target sentence and premise extraction before looking at outcomes. |
 
-Concrete next experiments:
+### Discriminating predictions
 
-1. **Resample two kinds of sentence separately, with a fixed prefix.** Keep the trace up to the target sentence, then resample only that sentence (and whatever follows). Primary outcome: the same geometric shift and crossing rate as in Section 2. (a) The sentence that adopts spots-per-giraffe. (b) The sentence that promises impartiality. (c) Negative control: a later sentence about giraffe species that does not change the product. Prediction from this write-up: (b) and (c) change nothing; (a) moves the answer with the incentive. I would run this on Qwen 3.5 first (complete answers, ceiling impartiality labels) with a pre-set number of continuations per trace.
-2. Fresh mirrored runs, interleaved, with a person checking the extracted population and spots numbers, to turn Section 5 into a claim or kill it.
-3. Prompts that keep the same sentence polarity in both directions, to kill the "exceeds / does not exceed" confound.
+If the impartiality sentence is causally effective, forcing it should reduce the mirrored shift relative to the matched neutral sentence. If it is merely a verbal commitment, the continuation and final answer should change little.
+
+If flexible-premise selection carries the effect, the donation mapping should change the resampled spots-per-giraffe sentence, and pinning that premise should reduce the downstream answer shift. The species-sentence intervention should not change either primary outcome. The population premise should be less responsive than spots per giraffe.
+
+If wording polarity drives the original result, the effect should track the independently randomized wording template even after recipient mapping is held fixed. If serving drives it, randomized interleaving and a pinned route should attenuate the condition difference without requiring any sentence-level intervention.
+
+I would start with Qwen 3.5 because it has complete answers, a large original shift, and 100/100 positive impartiality labels. That combination makes the causal question especially clean: an observational label cannot separate its traces, but a randomized sentence intervention can still test whether the commitment changes what follows.
+
+J-lens on Qwen 3.5 could complement this design by asking when condition information becomes decodable internally. I did not run it, and I would not use it as a substitute for the behavioral intervention.
+
+---
+
+## 8. Limitations and claim boundaries
+
+| Limitation | Consequence for my claim |
+|---|---|
+| The mirrored prompts change “exceeds” versus “does not exceed” | Wording polarity remains a live alternative to moral motivation. |
+| The original conditions were not perfectly interleaved | Serving and time variation remain live alternatives. |
+| DeepSeek Pro has severe missingness | I exclude it from the primary average; its +12.5% direction is descriptive only. |
+| The impartiality judge was not validated against a full human-labeled set | Label error, especially on long traces, can weaken the diagnostic analysis. |
+| 49 judge calls failed | I treat them as missing, not negative. |
+| Final-answer parsing is mostly automatic | Differential parseability can select the analyzed sample. |
+| The disclosure search has unknown recall | The 40-case audit describes retrieved candidates, not all disclosures. |
+| The disclosure scorer is a model | Quoted evidence is inspectable, but category decisions can inherit model error. |
+| The H8 extractor made 5/20 audit errors | The decomposition is exploratory and cannot support a mechanism claim. |
+| H8 gate imbalance reaches 17 percentage points | Condition-dependent selection can distort component shifts. |
+| Filtering on an impartiality label is observational | It tests diagnostic value, not the causal effect of becoming impartial. |
+| Qwen 3.5’s cutoff coincides with a common baseline answer | Its crossing rate is unusually sensitive; the size shift is more stable. |
+| Claude’s reasoning is an API summary | I do not treat it as equivalent to raw chain-of-thought. |
+| I study one question and a fixed model set retrospectively | I do not generalize the numerical effect to all tasks or models. |
+
+These limits leave me with a narrow but useful conclusion. The Donation Bet produces a robust population-level association between the donation mapping and answers in the nine-model primary set. Explicit impartiality language has no measurable diagnostic value here, and retrieved open disclosures do not explain the shift. The result is consistent with unfaithful CoT at the population level, while per-trace lying, a hidden moral cause, and the exploratory premise-level mechanism remain unproven.
 
 ---
 
 ## Reproducibility
 
-I ran all later analyses offline with fixed random seeds, using `uv` only (never `python3` or a system interpreter). I recomputed the headline numbers with a second script; they agreed to 0.05 percentage points. Code, per-trace files, and longer reports: **https://github.com/shahshlok/value-leakage** (fork of Aditya's replication repo). Start at `FINAL_REPORT.md`. Then `analysis/hyp1_*` (anchoring control), `hyp6_impartiality` (judge labels and measurement), `hyp7_impartiality_dissociation` (does the promise predict?), `hyp8_locus` (exploratory split of the Fermi product). From the repo root: `uv sync`, then `uv run` on the analysis scripts listed in each report.
+I used `uv` only. I kept the original corpus fixed, used model-equal aggregation for the primary result, and recomputed the headline estimates independently. The repository contains the code, data, and trace-level artifacts: **https://github.com/shahshlok/value-leakage**.
+
