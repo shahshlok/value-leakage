@@ -1,5 +1,7 @@
-"""Scientific H7 figures derived only from the saved numeric tables."""
+"""Scientific H7 figures derived from saved analysis artifacts."""
 import csv
+import hashlib
+import json
 
 import matplotlib
 matplotlib.use('Agg')
@@ -7,6 +9,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 
 from prepare_h7 import OUT
+from analyze_h7 import cell_statistics, read_jsonl
 
 
 def contrast_row(all_rows, dataset, tier, model, stratum):
@@ -14,22 +17,80 @@ def contrast_row(all_rows, dataset, tier, model, stratum):
                 and r['model_dir'] == model and r['metric'] == 'log' and r['stratum'] == stratum)
 
 
-def plot_contrast_point(ax, row, y, offset, color, marker, label=None):
+def plot_contrast_point(ax, row, y, offset, color, marker, label=None, upper_cap=50):
     point = float(row['geometric_shift_pct'])
     if row['geometric_ci95_low_pct']:
         low, high = float(row['geometric_ci95_low_pct']), float(row['geometric_ci95_high_pct'])
-        ax.errorbar(point, y + offset, xerr=[[point - low], [high - point]], fmt=marker, color=color,
+        plotted_high = min(high, upper_cap)
+        ax.errorbar(point, y + offset, xerr=[[point - low], [plotted_high - point]], fmt=marker, color=color,
                     capsize=2, label=label)
+        if high > upper_cap:
+            ax.annotate(f'{high:.1f}', xy=(upper_cap - .25, y + offset),
+                        xytext=(upper_cap - 4, y + offset), ha='right', va='center',
+                        fontsize=8, color=color,
+                        arrowprops=dict(arrowstyle='-|>', color=color, lw=1))
     else:
         ax.plot(point, y + offset, marker='D', markerfacecolor='none', color=color, linestyle='none')
         ax.plot(point, y + offset, marker=marker, markersize=3, color='#000000', linestyle='none')
 
 
+def percentage_point_difference(rows, dataset, members, seed, n_boot):
+    """All-answer minus claim-positive geometric shifts, paired by bootstrap replicate."""
+    model_points = {'all': [], 'positive': []}
+    model_draws = {'all': [], 'positive': []}
+    for model in members:
+        cells = {condition: [r for r in rows if r['model_dir'] == model and
+                            r['condition'] == condition]
+                 for condition in ('below_good', 'above_good')}
+        points, draws = {}, {}
+        for condition, group in cells.items():
+            stable_seed = int(hashlib.sha256(
+                f'{seed}|{dataset}|{model}|{condition}'.encode()).hexdigest()[:16], 16)
+            rng = np.random.default_rng(stable_seed)
+            indices = rng.integers(len(group), size=(n_boot, len(group)))
+            point_stats = cell_statistics(group)
+            draw_stats = cell_statistics(group, indices)
+            points[condition] = {stratum: point_stats[('log', stratum)]
+                                 for stratum in ('all', 'positive')}
+            draws[condition] = {stratum: draw_stats[('log', stratum)]
+                                for stratum in ('all', 'positive')}
+        for stratum in ('all', 'positive'):
+            model_points[stratum].append(
+                points['above_good'][stratum] - points['below_good'][stratum])
+            model_draws[stratum].append(
+                draws['above_good'][stratum] - draws['below_good'][stratum])
+    pooled_points = {stratum: np.mean(model_points[stratum])
+                     for stratum in ('all', 'positive')}
+    pooled_draws = {stratum: np.mean(model_draws[stratum], axis=0)
+                    for stratum in ('all', 'positive')}
+    point = 100 * (np.expm1(pooled_points['all']) - np.expm1(pooled_points['positive']))
+    bootstrap = 100 * (np.expm1(pooled_draws['all']) - np.expm1(pooled_draws['positive']))
+    finite = np.isfinite(bootstrap)
+    ci = np.quantile(bootstrap, [.025, .975]) if finite.all() else None
+    return point, ci
+
+
+def plot_difference_point(ax, point, ci, y):
+    if ci is not None:
+        ax.errorbar(point, y, xerr=[[point - ci[0]], [ci[1] - point]],
+                    fmt='o', color='#000000', capsize=2)
+    else:
+        ax.plot(point, y, marker='D', markerfacecolor='none', color='#000000')
+
+
 def main():
     all_rows = list(csv.DictReader((OUT / 'contrasts.csv').open()))
     rows = [r for r in all_rows if r['dataset'] == 'h6_corrected']
-    all_differences = list(csv.DictReader((OUT / 'paired_differences.csv').open()))
-    differences = [r for r in all_differences if r['dataset'] == 'h6_corrected']
+    protocol = json.loads((OUT / 'protocol.json').read_text())
+    h6 = read_jsonl(OUT / 'h7_outcomes.jsonl')
+    exclusions = json.loads((OUT / 'disclosure_exclusions.json').read_text())
+    bootstrap_rows = {
+        'h6_corrected': h6,
+        'h6_excluding_confirmed_audited_disclosures': [
+            r for r in h6 if r['source_id'] not in set(exclusions['confirmed'])],
+        'h6_excluding_confirmed_or_uncertain_audited_disclosures': [
+            r for r in h6 if r['source_id'] not in set(exclusions['confirmed_or_uncertain'])],
+    }
     models = sorted({r['model_dir'] for r in rows if r['tier'] == 'per_model'})
     sensitivity = [
         ('h6_excluding_confirmed_audited_disclosures', 'Excl. 8 confirmed disclosures'),
@@ -49,32 +110,25 @@ def main():
         for stratum, offset, color, marker, name in strata_style:
             row = contrast_row(all_rows if not model else rows, 'h6_corrected', tier, model, stratum)
             plot_contrast_point(axes[0], row, i, offset, color, marker, name if i == 0 else None)
-        dtier = f'model:{model}' if model else 'primary_9'
-        row = next(r for r in differences if r['tier'] == dtier and r['metric'] == 'log' and r['comparison'] == 'positive_minus_all')
-        p = 100 * float(row['estimate'])
-        if row['ci95_low']:
-            lo, hi = [100 * float(row[k]) for k in ('ci95_low', 'ci95_high')]
-            axes[1].errorbar(p, i, xerr=[[p-lo], [hi-p]], fmt='o', color='#000000', capsize=2)
-        else:
-            axes[1].plot(p, i, marker='D', markerfacecolor='none', color='#000000')
+        members = [model] if model else protocol['primary_models']
+        p, ci = percentage_point_difference(
+            bootstrap_rows['h6_corrected'], 'h6_corrected', members,
+            protocol['seed'], protocol['bootstrap_replicates'])
+        plot_difference_point(axes[1], p, ci, i)
     for j, (dataset, _) in enumerate(sensitivity):
         i = primary_idx + 1 + j
         for stratum, offset, color, marker, _ in strata_style:
             row = contrast_row(all_rows, dataset, 'primary_9', '', stratum)
             plot_contrast_point(axes[0], row, i, offset, color, marker)
-        row = next((r for r in all_differences if r['dataset'] == dataset and r['tier'] == 'primary_9'
-                     and r['metric'] == 'log' and r['comparison'] == 'positive_minus_all'), None)
-        if row:
-            p = 100 * float(row['estimate'])
-            if row['ci95_low']:
-                lo, hi = [100 * float(row[k]) for k in ('ci95_low', 'ci95_high')]
-                axes[1].errorbar(p, i, xerr=[[p-lo], [hi-p]], fmt='o', color='#000000', capsize=2)
-            else:
-                axes[1].plot(p, i, marker='D', markerfacecolor='none', color='#000000')
+        p, ci = percentage_point_difference(
+            bootstrap_rows[dataset], dataset, protocol['primary_models'],
+            protocol['seed'], protocol['bootstrap_replicates'])
+        plot_difference_point(axes[1], p, ci, i)
     axes[0].set_yticks(range(len(labels)), labels)
     axes[0].invert_yaxis()
     axes[0].set_xlabel('Above-good / below-good geometric mean − 1 (%)')
-    axes[1].set_xlabel('Claim-positive minus all contrast (100 × log units)')
+    axes[0].set_xlim(right=50)
+    axes[1].set_xlabel('All-answers shift minus claim-positive shift (percentage points)')
     axes[0].set_title('Condition contrast persists in claim-positive traces')
     axes[1].set_title('Paired change after filtering on the claim')
     for ax in axes:
@@ -106,10 +160,12 @@ def main():
         ax.grid(axis='x', color='#000000', alpha=.15)
     axes[0].set_yticks(range(len(models)), model_labels)
     axes[0].invert_yaxis()
-    axes[1].legend(loc='lower right', frameon=False, fontsize=9)
+    handles, legend_labels = axes[1].get_legend_handles_labels()
+    fig.legend(handles, legend_labels, loc='lower center', bbox_to_anchor=(.5, .065),
+               ncol=2, frameon=False, fontsize=9)
     fig.suptitle('H7 · Threshold crossing by incentive direction', fontsize=15)
     fig.text(.02, .02, 'Same binary outcome in both arms; equality is below. Descriptive observed-answer rates; missing-Y bounds are in missing_y_bounds.csv.', fontsize=9)
-    fig.tight_layout(rect=[0, .05, 1, .94])
+    fig.tight_layout(rect=[0, .13, 1, .94])
     for ext in ('png', 'svg'):
         fig.savefig(OUT / f'crossing_rate_dumbbell.{ext}', dpi=180)
     plt.close(fig)
