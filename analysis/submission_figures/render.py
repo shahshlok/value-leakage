@@ -99,23 +99,21 @@ def load_h1():
 
 
 def fig1() -> tuple[Path, int, int]:
-    cells, primary, secondary = load_h1()
+    cells, primary, _secondary = load_h1()
     w, h = 860, 545
     svg = Svg(w, h)
     lo, hi = (x * 100 for x in primary["bootstrap"]["exp_theta_minus_1_ci_95_percentile"])
-    slo, shi = (x * 100 for x in secondary["bootstrap"]["exp_theta_minus_1_ci_95_percentile"])
     svg.text(28, 18, "A number with no consequences still moves the estimate",
              size=20, weight=700, baseline="hanging")
     svg.text(
         28, 46,
-        f"Locked holdout, both models pooled: {pct(primary['exp_theta_minus_1'] * 100)}  "
-        f"[{lo:.1f}, {hi:.1f}]  (bookkeeping).",
+        f"Pooled locked holdout, bookkeeping framing (what the panels show): "
+        f"{pct(primary['exp_theta_minus_1'] * 100)}  [{lo:.1f}, {hi:.1f}].",
         size=12.5, fill=MUTED, baseline="hanging",
     )
     svg.text(
         28, 64,
-        f"Irrelevant-number framing: {pct(secondary['exp_theta_minus_1'] * 100)}  "
-        f"[{slo:.1f}, {shi:.1f}].  Each panel is 45 holdout answers. Medians are descriptive, not the pooled test.",
+        "Each cloud is 45 answers. Black bars are that column's median, not the pooled test.",
         size=12.5, fill=MUTED, baseline="hanging",
     )
 
@@ -247,7 +245,7 @@ def fig2() -> tuple[Path, int, int]:
     )
     svg.text(
         28, 70,
-        "The 5% screen split 17 / 17. Three pairs survived re-extraction. None crossed a cutoff.",
+        "The 5% screen split 17 / 17. Three pairs survived re-extraction. None of those 3 crossed a cutoff.",
         size=13, fill=MUTED, baseline="hanging",
     )
 
@@ -357,11 +355,20 @@ def load_h3():
     paired = json.loads((out / "bootstrap_summary.json").read_text())[
         "paired_diff_base_minus_labelpos"
     ]["percentage_points"]
-    return crossing, contrasts, paired
+    primary_set = set(primary)
+    n_usable = n_promised = 0
+    for row in csv.DictReader((out / "h7_outcomes.csv").open()):
+        if row["model_dir"] not in primary_set or row["value_status"] != "positive":
+            continue
+        n_usable += 1
+        if row["claim"] == "True":
+            n_promised += 1
+    assert n_usable == 753
+    return crossing, contrasts, paired, n_promised / n_usable
 
 
 def fig3() -> tuple[Path, int, int]:
-    crossing, contrasts, paired = load_h3()
+    crossing, contrasts, paired, promise_share = load_h3()
     w, h = 840, 670
     svg = Svg(w, h)
     svg.text(28, 20, "Answers move with the donation. The promise does not stop them.",
@@ -434,11 +441,14 @@ def fig3() -> tuple[Path, int, int]:
 
     svg.text((bleft + bright) / 2, bbot + 34, "Change in answer size, when going above helps the good cause",
              size=12.5, fill=INK, anchor="middle")
+    delta = (
+        f"{paired['estimate']:+.1f} pp  [{paired['ci95_low']:.1f}, {paired['ci95_high']:.1f}]"
+        .replace("-", "\u2212")
+    )
     svg.text(
         28, 648,
-        f"Filtering on the promise changes that shift by {paired['estimate']:+.1f} pp  "
-        f"[{paired['ci95_low']:.1f}, {paired['ci95_high']:.1f}].  "
-        "76% of traces already carry the promise.".replace("-", "\u2212"),
+        f"Filtering on the promise changes that shift by {delta}.  "
+        f"{promise_share:.0%} of answers in this nine-model sample already carry the promise.",
         size=12, fill=MUTED, baseline="middle",
     )
 
@@ -591,16 +601,17 @@ def load_h4():
 
 def fig4() -> tuple[Path, int, int]:
     components, spreads, audit_error = load_h4()
-    w, h = 860, 500
+    w, h = 860, 520
     svg = Svg(w, h)
-    svg.text(28, 20, "The shift lands in the assumption nothing pins down",
+    svg.text(28, 16, "Exploratory", size=12, weight=700, fill=MUTED, baseline="hanging")
+    svg.text(28, 36, "The shift lands in the assumption nothing pins down",
              size=20, weight=700, baseline="hanging")
-    svg.text(28, 50, "If bias takes the path of least resistance it should move spots per giraffe, not the giraffe count.",
+    svg.text(28, 66, "If bias takes the path of least resistance it should move spots per giraffe, not the giraffe count.",
              size=13, fill=MUTED, baseline="hanging")
 
     # left: room to move
-    svg.text(28, 92, "How pinned is the input?", size=15, weight=700, baseline="hanging")
-    lleft, lright, ltop, lbot = 48, 400, 150, 390
+    svg.text(28, 106, "How pinned is the input?", size=15, weight=700, baseline="hanging")
+    lleft, lright, ltop, lbot = 48, 400, 164, 404
     xmax = max(s["ratio"] for s in spreads) + 0.7
 
     def lx(ratio):
@@ -629,8 +640,8 @@ def fig4() -> tuple[Path, int, int]:
              size=12, fill=INK, anchor="middle")
 
     # right: where it landed
-    svg.text(460, 92, "Where the shift landed", size=15, weight=700, baseline="hanging")
-    rleft, rright, rtop, rbot = 470, 820, 150, 390
+    svg.text(460, 106, "Where the shift landed", size=15, weight=700, baseline="hanging")
+    rleft, rright, rtop, rbot = 470, 820, 164, 404
 
     def rx(p):
         return rleft + (p + 6) / 24 * (rright - rleft)
@@ -660,8 +671,8 @@ def fig4() -> tuple[Path, int, int]:
              size=12, fill=INK, anchor="middle")
 
     svg.text(
-        28, 478,
-        f"Exploratory. Equal-weight nine models. {audit_error:.0%} extraction-audit error; "
+        28, 490,
+        f"Equal-weight nine models. {audit_error:.0%} extraction-audit error; "
         "gate pass rates differ by up to 17 pp. Not a breakdown of the +15.5% headline.",
         size=11, fill=MUTED, baseline="hanging",
     )
