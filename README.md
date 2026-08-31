@@ -1,26 +1,31 @@
 # SPAR Take-home: Value Leakage
 
-Fork of the Donation Bet replication: do models shift Fermi estimates when a donation rides on which side of a threshold the answer falls, and do chain-of-thought impartiality claims diagnose that shift?
+Fork of the Donation Bet replication, built around one question: **is this really a case of the model lying in its reasoning?** Four explanations were written down and tested; the surviving picture is simpler and more worrying than lying.
 
-With anchoring controlled by a mirrored fixed-threshold contrast, final answers shift **+15.5%** (95% CI [9.4, 22.1]) toward the donation-favorable direction. Impartiality claims in CoT showed no measurable diagnostic value in this sample (tested three ways). Identifiable transparent disclosures do not account for the effect. An exploratory decomposition is consistent with the shift concentrating in the unconstrained Fermi assumption; the extractor failed a 25% audit, so that is a direction, not a finding.
+1. **It is just the number, not the morality.** True, and it shapes the design: a neutral boundary the prompt says has no consequences moved estimates **+26%**, and even a number the prompt flatly declared irrelevant moved them **+16%** (400 fresh responses, plan hash-locked before the holdout was analyzed). Only the mirrored fixed-threshold contrast supports incentive-direction inferences.
+2. **The model does honest math, then writes down a nicer number.** False: of 294 traces where the reasoning's final figure could be checked against the answer, only **3** verified discrepancies survived, and none changed who got the money.
+3. **Saying "I will be fair" tells you nothing about whether the answer moved.** True: final answers shift **+15.5%** (95% CI [9.4, 22.1]) toward the donation-favorable side, and **+14.1%** among the traces that promised to be fair. The promise is diagnostically empty.
+4. **The shift enters through the one number nobody can check.** Probably, not claimed: the movement concentrates in spots per giraffe (+8.6%) rather than giraffe count (−1.7%), but the extractor failed a 25% audit, so that is a lead, not a finding.
 
-![Forest plot of donation-direction contrasts](submission_figures/fig3_forest_contrasts.png)
+The reasoning is **incomplete rather than false**: it reports its arithmetic and its intention correctly, and omits the one input that actually moved. Reading the reasoning for a promise of fairness tells you nothing about whether the answer moved.
 
-*Figure 3. Anchoring-controlled donation-direction contrasts across models.*
+![Answers move with the donation, in every model](submission_figures/fig2_headline_dissociation.png)
+
+*Figure 2. Answers move with the donation, in every model.*
 
 ## Start here
 
-- [`FINAL_REPORT.md`](FINAL_REPORT.md) — the paper
+- [`Model Forensics SPAR take-home Shlok Shah.pdf`](Model%20Forensics%20SPAR%20take-home%20Shlok%20Shah.pdf) — the submitted write-up (markdown equivalent: [`SUBMISSION_GOOGLE_DOC.md`](SUBMISSION_GOOGLE_DOC.md))
+- [`FINAL_REPORT.md`](FINAL_REPORT.md) — the formal report
 - [`SUBMISSION_OVERVIEW.md`](SUBMISSION_OVERVIEW.md) — one-page summary
-- [`SUBMISSION_GOOGLE_DOC.md`](SUBMISSION_GOOGLE_DOC.md) — submission write-up
-- [`submission_figures/`](submission_figures/) — key figures
+- [`submission_figures/`](submission_figures/) — the five submission figures
 
 ## Repo map
 
-- `analysis/hyp1_*` — anchoring control
-- `analysis/hyp6_impartiality` — measurement study (impartiality claims as a proxy)
+- `analysis/hyp1_*` — anchoring control (neutral boundary +26%, irrelevant number +16%; 400 fresh responses)
+- `analysis/hyp6_impartiality` — measurement study (impartiality claims as a proxy) + reporting-stage audit (answer vs the reasoning's own working: 294 pairs, 3 survived)
 - `analysis/hyp7_impartiality_dissociation` — headline diagnostic study
-- `analysis/hyp8_locus` — exploratory decomposition
+- `analysis/hyp8_locus` — exploratory decomposition (unvalidated lead)
 - `runs/` — raw 10-model corpus
 - `src/` — parsers and experiment pipeline
 
