@@ -68,8 +68,8 @@ def plot() -> None:
     style.apply()
     rows, holdout = load()
 
-    fig = plt.figure(figsize=(8.2, 4.85))
-    ax = fig.add_axes([0.295, 0.235, 0.535, 0.585])
+    fig = plt.figure(figsize=(8.6, 4.95))
+    ax = fig.add_axes([0.335, 0.375, 0.505, 0.395])
 
     ys = [3, 2, 1, 0]
     for y, row in zip(ys, rows):
@@ -83,9 +83,11 @@ def plot() -> None:
         )
         ax.plot([lo], [y], "o", ms=11, color=BELOW, zorder=3)
         ax.plot([hi], [y], "o", ms=11, color=ABOVE, zorder=3)
-        ax.text(lo, y + 0.30, millions(row["median_low"]), ha="center", va="bottom",
+        crowded = (hi - lo) < 4.0
+        ax.text(lo, y - 0.34 if crowded else y + 0.28, millions(row["median_low"]),
+                ha="center", va="top" if crowded else "bottom",
                 fontsize=10.5, color=BELOW, fontweight="bold")
-        ax.text(hi, y + 0.30, millions(row["median_high"]), ha="center", va="bottom",
+        ax.text(hi, y + 0.28, millions(row["median_high"]), ha="center", va="bottom",
                 fontsize=10.5, color=ABOVE, fontweight="bold")
         pct = row["median_high"] / row["median_low"] - 1.0
         ax.text(1.035, y, f"+{pct * 100:.0f}%", transform=ax.get_yaxis_transform(),
@@ -98,10 +100,10 @@ def plot() -> None:
             f"number shown:  {millions(row['anchor_low'])}  →  {millions(row['anchor_high'])}"
         )
     ax.set_yticks(ys)
-    ax.set_yticklabels(labels, fontsize=10.4, linespacing=1.5, color=INK)
+    ax.set_yticklabels(labels, fontsize=9.9, linespacing=1.5, color=INK)
     for tick in ax.get_yticklabels():
         tick.set_horizontalalignment("left")
-    ax.tick_params(axis="y", length=0, pad=170)
+    ax.tick_params(axis="y", length=0, pad=198)
 
     ax.set_ylim(-0.72, 3.78)
     ax.set_xlim(19, 58)
@@ -112,12 +114,14 @@ def plot() -> None:
     for x in (20, 30, 40, 50):
         ax.axvline(x, color=FAINT, lw=0.7, zorder=0)
 
-    ax.text(0.0, 1.13, "low number shown", transform=ax.transAxes, fontsize=10.5,
-            color=BELOW, fontweight="bold", ha="left")
-    ax.text(0.40, 1.13, "high number shown", transform=ax.transAxes, fontsize=10.5,
-            color=ABOVE, fontweight="bold", ha="left")
-    ax.text(1.035, 1.13, "change", transform=ax.transAxes, fontsize=10.5,
-            color=MUTED, ha="left")
+    ax.plot([0.01], [1.075], "o", ms=9, color=BELOW, transform=ax.transAxes, clip_on=False)
+    ax.text(0.05, 1.075, "at the low number", transform=ax.transAxes, fontsize=10.2,
+            color=BELOW, fontweight="bold", ha="left", va="center")
+    ax.plot([0.53], [1.075], "o", ms=9, color=ABOVE, transform=ax.transAxes, clip_on=False)
+    ax.text(0.57, 1.075, "at the high number", transform=ax.transAxes, fontsize=10.2,
+            color=ABOVE, fontweight="bold", ha="left", va="center")
+    ax.text(1.035, 1.075, "change", transform=ax.transAxes, fontsize=10.2,
+            color=MUTED, ha="left", va="center")
 
     style.title_block(
         fig,
@@ -125,7 +129,7 @@ def plot() -> None:
         "The prompt states the cutoff is arbitrary and carries no reward, no penalty and no preferred side.\n"
         "Doubling it still raises the answer in every cell.",
         y=0.985,
-        gap=0.062,
+        gap=0.058,
     )
 
     prim = holdout["neutral_boundary"]
@@ -133,20 +137,20 @@ def plot() -> None:
 
     def band(entry):
         lo, hi = entry["bootstrap"]["exp_theta_minus_1_ci_95_percentile"]
-        return (f"+{entry['exp_theta_minus_1'] * 100:.0f}%  "
+        return (f"+{entry['exp_theta_minus_1'] * 100:.1f}%  "
                 f"[{lo * 100:.1f}, {hi * 100:.1f}]")
 
     fig.text(
-        0.012, 0.108,
-        f"Pre-registered holdout test, both models pooled and equally weighted:   "
-        f"bookkeeping boundary {band(prim)}      irrelevant number {band(sec)}",
-        fontsize=10.2, color=INK, va="top", ha="left",
+        0.012, 0.205,
+        "Locked holdout test, both models pooled, equal weight\n"
+        f"bookkeeping boundary  {band(prim)}          irrelevant number  {band(sec)}",
+        fontsize=10.0, color=INK, va="top", ha="left", linespacing=1.55,
     )
     fig.text(
-        0.012, 0.045,
-        "Analysis plan frozen and hashed before the 360 holdout responses were opened. "
+        0.012, 0.075,
+        "The analysis plan was frozen and its hash published before the 360 holdout responses were opened.\n"
         "95% bootstrap intervals; Holm-corrected p = 0.002 and 0.005.",
-        fontsize=9.4, color=MUTED, va="top", ha="left",
+        fontsize=8.8, color=MUTED, va="top", ha="left", linespacing=1.5,
     )
 
     for path in style.save(fig, "fig1_anchoring"):
