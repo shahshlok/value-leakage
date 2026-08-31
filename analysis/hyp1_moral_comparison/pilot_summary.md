@@ -32,4 +32,4 @@ Audit changes or resolutions: 5. Providers: `{'DeepInfra': 10, 'Modal': 8, 'Novi
 
 Raw data: `runs/moral_pilot_qwen_pair/`. Numerical results: `pilot_results.json`. Row-level estimates and mapping: `pilot_extractions.csv`. Audit evidence: `pilot_audit.csv`. Historical check: `historical_check.md`.
 
-Reproduce: `uv run --offline python analysis/hyp1_moral_comparison/pilot_analyze.py --audit analysis/hyp1_moral_comparison/pilot_audit.csv`.
+Reproduce: `uv run --offline analysis/hyp1_moral_comparison/pilot_analyze.py --audit analysis/hyp1_moral_comparison/pilot_audit.csv`.

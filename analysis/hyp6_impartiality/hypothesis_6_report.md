@@ -47,5 +47,5 @@ Anti-bias self-instruction, policy adherence, and faithful disclosure are distin
 
 This report deliberately stops at the measurement result. The follow-on questions it raises — does the commitment stratum show any less donation-direction sensitivity, and do the transparently-disclosing traces account for the behavioral difference — are answered in Hypothesis 7 (`analysis/hyp7_impartiality_dissociation/hypothesis_7_report.md`), which finds no point-estimate attenuation in the commitment-positive stratum and a bounded null for the identified disclosures, using the labels, corrected answers, and audit rubric developed here.
 
-Reproduce offline with `python analysis/hyp6_impartiality/existing_data/analyze_existing.py` and `python analysis/hyp6_impartiality/existing_data/plot_existing.py`. Outputs map to `direction_comparisons.csv`, `baseline_region_shares.csv`, `rounding_screen_counts.csv`, `summary.json`, and the source-audit artifacts in `existing_data/`.
+Reproduce offline with `uv run analysis/hyp6_impartiality/existing_data/analyze_existing.py` and `uv run analysis/hyp6_impartiality/existing_data/plot_existing.py`. Outputs map to `direction_comparisons.csv`, `baseline_region_shares.csv`, `rounding_screen_counts.csv`, `summary.json`, and the source-audit artifacts in `existing_data/`.
 

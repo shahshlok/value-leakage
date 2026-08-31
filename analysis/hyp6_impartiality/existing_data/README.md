@@ -5,8 +5,8 @@ This directory contains the offline descriptive analysis of the original 1,000-t
 Run:
 
 ```bash
-python analysis/hyp6_impartiality/existing_data/analyze_existing.py
-python analysis/hyp6_impartiality/existing_data/plot_existing.py
+uv run analysis/hyp6_impartiality/existing_data/analyze_existing.py
+uv run analysis/hyp6_impartiality/existing_data/plot_existing.py
 ```
 
 Key outputs are `direction_comparisons.csv`, `baseline_region_shares.csv`, `rounding_screen_counts.csv`, `summary.json`, and `commitments_and_behavior.png`. The report is `../hypothesis_6_report.md`. The prior report is preserved verbatim as `../numerical_consistency_report.md`.

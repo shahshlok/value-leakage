@@ -28,7 +28,7 @@ Two summaries appear throughout. They answer different questions.
 | Geometric shift | How much bigger is the typical *size* of the answer when a high answer helps the good cause? | **+15.5%** (9.4 to 22.1) |
 | Threshold-crossing | What fraction of answers sit *above the same cutoff*, and how much does that fraction jump when sitting above helps? | **+32.1 percentage points** (25.6 to 38.6) |
 
-Intervals are 95% bootstrap intervals: I resample the existing answers 10,000 times, within each model and condition, and report the middle 95% of those repeats. They describe these ten models, not a random sample of all models. "Percentage points" means a jump in a rate (14% to 66% is +52 percentage points), not a 52% increase of the rate.
+Intervals are 95% bootstrap intervals: I resample the existing answers 10,000 times, within each model and condition, and report the middle 95% of those repeats. They describe the nine-model primary set, not a random sample of all models. "Percentage points" means a jump in a rate (14% to 66% is +52 percentage points), not a 52% increase of the rate.
 
 ---
 
@@ -196,4 +196,4 @@ Concrete next experiments:
 
 ## Reproducibility
 
-I ran all later analyses offline with fixed random seeds. I recomputed the headline numbers with a second script; they agreed to 0.05 percentage points. Code, per-trace files, and longer reports: **https://github.com/shahshlok/value-leakage** (fork of Aditya's replication repo). Start at `FINAL_REPORT.md`. Then `analysis/hyp1_*` (anchoring control), `hyp6_impartiality` (judge labels and measurement), `hyp7_impartiality_dissociation` (does the promise predict?), `hyp8_locus` (exploratory split of the Fermi product).
+I ran all later analyses offline with fixed random seeds, using `uv` only (never `python3` or a system interpreter). I recomputed the headline numbers with a second script; they agreed to 0.05 percentage points. Code, per-trace files, and longer reports: **https://github.com/shahshlok/value-leakage** (fork of Aditya's replication repo). Start at `FINAL_REPORT.md`. Then `analysis/hyp1_*` (anchoring control), `hyp6_impartiality` (judge labels and measurement), `hyp7_impartiality_dissociation` (does the promise predict?), `hyp8_locus` (exploratory split of the Fermi product). From the repo root: `uv sync`, then `uv run` on the analysis scripts listed in each report.

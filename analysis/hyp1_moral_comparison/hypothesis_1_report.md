@@ -103,8 +103,8 @@ Paths below are relative to the repository root, `/Users/shlok/value-leakage`.
 Reproduce the audited moral table and analysis locally, without new API calls:
 
 ```sh
-uv run python analysis/hyp1_moral_comparison/full_extract.py --finalize
-uv run python analysis/hyp1_moral_comparison/full_analyze.py
+uv run analysis/hyp1_moral_comparison/full_extract.py --finalize
+uv run analysis/hyp1_moral_comparison/full_analyze.py
 ```
 
 The frozen plans and raw records are retained for an honest audit trail. H1 collection and analysis are complete; stronger causal or reasoning-mechanism claims would require a separate experiment.

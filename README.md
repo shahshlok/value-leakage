@@ -26,6 +26,14 @@ With anchoring controlled by a mirrored fixed-threshold contrast, final answers 
 
 All analyses are offline and deterministic with fixed seeds. Headline numbers were independently recomputed twice.
 
+**Run everything with `uv`.** Do not use `python3`, `python`, `pip`, or a system interpreter.
+
+```
+uv sync
+uv run -m value_leakage.plot --run_dir runs/inkling_20260815_030703
+uv run analysis/hyp7_impartiality_dissociation/analyze_h7.py
+```
+
 This fork builds on the upstream replication codebase by [Aditya Singh](https://github.com/adsingh-64/value-leakage) (`adsingh-64/value-leakage`) and the Value Leakage paper setting from Owain Evans' group.
 
 ---
@@ -89,6 +97,8 @@ Anthropic-backend caveat: Claude returns a summarized trace, not raw CoT.
 
 ## Setup
 
+Install with `uv` only. Do not call `python3`, `python`, or `pip`.
+
 ```
 uv sync
 ```
@@ -96,14 +106,14 @@ uv sync
 Regenerate figures from the shipped data (no API keys needed):
 
 ```
-uv run python -m value_leakage.plot --run_dir runs/inkling_20260815_030703
-uv run python -m value_leakage.panel
+uv run -m value_leakage.plot --run_dir runs/inkling_20260815_030703
+uv run -m value_leakage.panel
 ```
 
 Run a new model end to end (needs keys — copy `.env.example` to `.env`):
 
 ```
-uv run python -m value_leakage.run --target_model <id> --target_backend fireworks --count 100
+uv run -m value_leakage.run --target_model <id> --target_backend fireworks --count 100
 ```
 
 ## Reading the plots

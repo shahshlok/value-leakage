@@ -40,4 +40,4 @@ Qwen3.5 historical and fresh low thresholds are both 41,000,000. Qwen3.8 histori
 
 ## Reproduction
 
-Run from the repository root with `UV_CACHE_DIR=/private/tmp/value-leakage-uv-cache uv run --offline python analysis/hyp1_moral_comparison/historical_check.py`. Inputs, fields, parser version, and SHA-256 hashes are recorded in [`historical_check.json`](</Users/shlok/value-leakage/analysis/hyp1_moral_comparison/historical_check.json>).
+Run from the repository root with `uv run --offline analysis/hyp1_moral_comparison/historical_check.py`. Inputs, fields, parser version, and SHA-256 hashes are recorded in [`historical_check.json`](historical_check.json).
