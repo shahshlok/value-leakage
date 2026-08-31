@@ -127,7 +127,9 @@ This pattern — the shift concentrating in the least-constrained factor, with t
 - **Wording asymmetry / semantic priming:** the mirrored prompts differ in more than moral direction; a non-moral asymmetry could contribute to the contrast. This is the primary alternative to a motivated-reasoning reading and is not excluded.
 - **Serving and provider differences:** conditions were not perfectly interleaved historically; the deepseek-pro anomaly shows serving artifacts are real in this corpus.
 - **Condition-asymmetric attrition:** claude-opus loses more answers in `above_good` (47 vs 37 usable); parsed-only analysis could be selected. Binary-outcome results with full denominators partially mitigate.
-- **Judge error and missingness:** long-trace false negatives shrink the labeled stratum; 37 labels are missing; neither can manufacture the within-stratum contrast.
+- **Judge error and missingness:** long-trace false negatives shrink the labeled stratum; 37 labels are missing; neither can manufacture the within-stratum contrast. The judge was validated only by LLM cross-agreement on small development audits (~12–14 of 15 with an independent model), never against human ground truth; trace length is confounded with source model in its known failure mode.
+- **Answer extraction:** nine answers were human-verified and corrected via source quotes and row keys; the remaining parsed answers passed deterministic checks but are not individually human-audited.
+- **Threshold placement:** Qwen 3.5's baseline median coincides exactly with its 41M threshold, making its crossing rate maximally sensitive to small shifts; the log-scale outcome is the more stable measure for that model.
 - **Model adjudication:** the disclosure rubric was applied by a model under span-citation constraints, not by a human; the exclusion sets are model-identified.
 - **Post-treatment conditioning:** stratification supports diagnostic, not causal, claims.
 - **Claude:** all reasoning-content findings for claude-opus describe API summaries, not raw CoT.
