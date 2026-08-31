@@ -1,5 +1,5 @@
 # Model Forensics SPAR Take-home — Value Leakage (Donation Bet)
-Shlok Shah · slk@enjoyflying.com
+Shlok Shah · hi@shahshlok.com
 
 ## Executive summary
 
@@ -69,9 +69,11 @@ ln(answer) = ln(population) + ln(spots-per-giraffe) + ln(final adjustment), and 
 - **The anchoring control did not test a number-free baseline:** it shows sensitivity to the *magnitude* of a supplied number, not that supplying any number versus none causes shifts.
 - **Scope:** ten fixed models, one task, one question; equal-weight fixed-model estimates are descriptive of these models, not population inferences; retrospective and exploratory, not preregistered — prior results were known when later analyses were specified.
 
-## 7. What I would do next
+## 7. What I did not do, and what I would do next
 
-1. **Sentence resampling, now with a target.** The natural resampling experiment is no longer "resample everything": resample the *assumption-adoption sentences* (where spots-per-giraffe is chosen) and separately the *impartiality-commitment sentences*. Prediction from these results: resampling the commitment sentences changes nothing; resampling the assumption sentences moves the answer with the incentive. That directly tests whether the verbalized commitment is causally inert and localizes the leak.
+The brief named two optional directions I did not run, on purpose. **Sentence resampling** is the right causal test, but Aditya noted it is slow and can sit outside the five-hour budget; I used the time to pin *which* sentences to resample rather than resampling blindly. **J-lens / internal representations** on Qwen 3.5 would need activations I do not have from this corpus. Both remain the natural follow-ups, now with a sharper target than they had at the start.
+
+1. **Sentence resampling, now with a target.** Resample the *assumption-adoption sentences* (where spots-per-giraffe is chosen) and separately the *impartiality-commitment sentences*. Prediction from these results: resampling the commitment sentences changes nothing; resampling the assumption sentences moves the answer with the incentive. That tests whether the verbalized commitment is causally inert and localizes the leak.
 2. Fresh interleaved mirrored runs with human-validated factor extraction, to turn the Section 5 direction into a claim.
 3. Wording-controlled mirrors (same polarity phrasing both directions) to eliminate the residual confound.
 
