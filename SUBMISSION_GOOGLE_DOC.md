@@ -40,7 +40,7 @@ So before anything else, I tested that. I wrote two versions of the prompt that 
 
 The answers moved. **+26%** for the neutral sorting version, and **+16%** even for the one that flatly tells the model the number is irrelevant. Telling a model a number means nothing does not stop it from reaching for it. And the model that showed almost no moral bias in Aditya's data moved this way too, which means the pull of a number is a property of the question rather than of weak-willed models.
 
-_[Figure 1]_ **A number the prompt says is meaningless still moves the answer.**
+_[Figure 1]_ **A number with no consequences still moves the answer.**
 
 That killed the easy comparison, and in killing it handed me the design I used for everything after: compare Version A against Version B, and never against the plain question. Same number on the screen, opposite meaning. Whatever separates those two cells, it is not the size of the number, because the number is identical.
 
@@ -50,7 +50,7 @@ I ran this on Qwen 3.5 and Qwen 3.8 only, since fresh answers cost money. I pick
 
 With a comparison I trusted, I went back to Aditya's ten-model data and pulled 1,000 traces, 50 per condition per model. 841 of them had an answer I could read.
 
-**Answers were 15.5% higher when going over the cutoff helped the good cause** (range 9.4% to 22.1%). The share of answers above the cutoff went up by **32 percentage points**. Every one of the nine models moved the same way.
+**Answers were 15.5% higher when going over the cutoff helped the good cause** (95% interval 9.4% to 22.1%). The share of answers above the cutoff went up by **32.1 percentage points**. Every one of the nine models moved the same way.
 
 _[Figure 2]_ **Answers move with the donation, in every model.**
 
@@ -102,7 +102,7 @@ If the bias is looking for somewhere to go, it should end up in the second one. 
 
 And that is where it is. Giraffe count moved **−1.7%** between conditions. Spots per giraffe moved **+8.6%**.
 
-_[Figure 5]_ **The one input nobody can pin down is the one that moves.**
+_[Figure 5]_ **Exploratory. The one input nobody can pin down is the one that moves.**
 
 This is the answer I most want to be true, which is exactly why I am not claiming it. I checked 20 of these extractions by hand and **5 were wrong**. The traces that survived my filter also differed between conditions by up to 17 percentage points, so the filter itself could be manufacturing the pattern. I am keeping it in because it makes a sharp prediction that the next experiment can prove wrong, not because I believe it yet.
 
@@ -156,7 +156,7 @@ Getting to a usable judge took four attempts. A cheap judge with a token cap ran
 |---|---:|---:|---:|
 | GLM 5.2 | +29.2% | 33 / 30 | 42% → 77% |
 | Qwen 3.5 | +22.4% | 50 / 50 | 14% → 66% |
-| MiniMax M3 | +21.3% | 43 / 43 | 40% → 54% |
+| MiniMax M3 | +21.3% | 43 / 43 | 40% → 53% |
 | Claude Opus 4.7 | +17.3% | 47 / 37 | 15% → 57% |
 | Inkling Small | +17.1% | 33 / 41 | 18% → 37% |
 | Qwen 3.8 | +11.5% | 47 / 47 | 38% → 79% |
