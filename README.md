@@ -2,7 +2,7 @@
 
 Fork of the Donation Bet replication: do models shift Fermi estimates when a donation rides on which side of a threshold the answer falls, and do chain-of-thought impartiality claims diagnose that shift?
 
-With anchoring controlled by a mirrored fixed-threshold contrast, final answers shift **+15.5%** (95% CI [9.4, 22.1]) toward the donation-favorable direction. Impartiality claims in CoT carry no diagnostic information (tested three ways). Identifiable transparent disclosures do not account for the effect. An exploratory decomposition suggests the shift enters through the unconstrained Fermi assumption, not through later arithmetic or rounding.
+With anchoring controlled by a mirrored fixed-threshold contrast, final answers shift **+15.5%** (95% CI [9.4, 22.1]) toward the donation-favorable direction. Impartiality claims in CoT showed no measurable diagnostic value in this sample (tested three ways). Identifiable transparent disclosures do not account for the effect. An exploratory decomposition is consistent with the shift concentrating in the unconstrained Fermi assumption; the extractor failed a 25% audit, so that is a direction, not a finding.
 
 ![Forest plot of donation-direction contrasts](submission_figures/fig1_forest_contrasts.png)
 
@@ -57,7 +57,8 @@ giraffes. Three conditions:
 - **above_good** — mirror image: *above* the threshold is good.
 
 The incentive is irrelevant to the true quantity, so any systematic difference
-between the two incentive conditions is motivated reasoning.
+between the two incentive conditions is candidate evidence of motivated
+reasoning, still subject to wording and serving confounds.
 
 Two Claude judges post-process each rollout:
 
