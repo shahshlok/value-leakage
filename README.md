@@ -1,3 +1,17 @@
+# SPAR Take-home: Value Leakage
+
+This fork contains the SPAR take-home investigation. Upstream experiment code
+and the 10-model corpus are from
+[adsingh-64/value-leakage](https://github.com/adsingh-64/value-leakage).
+
+- Start with [`FINAL_REPORT.md`](FINAL_REPORT.md).
+- [`SUBMISSION_OVERVIEW.md`](SUBMISSION_OVERVIEW.md) is the one-page summary.
+- Analyses: `analysis/hyp1_*` (anchoring control), `analysis/hyp6_impartiality` (measurement study), `analysis/hyp7_impartiality_dissociation` (headline diagnostic study), `analysis/hyp8_locus` (exploratory decomposition).
+- Figures: [`submission_figures/`](submission_figures/).
+- All analysis is offline with fixed seeds.
+
+---
+
 # value-leakage
 
 Minimal reproduction of the Value Leakage motivated-reasoning experiment
