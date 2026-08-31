@@ -1,14 +1,32 @@
 # SPAR Take-home: Value Leakage
 
-This fork contains the SPAR take-home investigation. Upstream experiment code
-and the 10-model corpus are from
-[adsingh-64/value-leakage](https://github.com/adsingh-64/value-leakage).
+Fork of the Donation Bet replication: do models shift Fermi estimates when a donation rides on which side of a threshold the answer falls, and do chain-of-thought impartiality claims diagnose that shift?
 
-- Start with [`FINAL_REPORT.md`](FINAL_REPORT.md).
-- [`SUBMISSION_OVERVIEW.md`](SUBMISSION_OVERVIEW.md) is the one-page summary.
-- Analyses: `analysis/hyp1_*` (anchoring control), `analysis/hyp6_impartiality` (measurement study), `analysis/hyp7_impartiality_dissociation` (headline diagnostic study), `analysis/hyp8_locus` (exploratory decomposition).
-- Figures: [`submission_figures/`](submission_figures/).
-- All analysis is offline with fixed seeds.
+With anchoring controlled by a mirrored fixed-threshold contrast, final answers shift **+15.5%** (95% CI [9.4, 22.1]) toward the donation-favorable direction. Impartiality claims in CoT carry no diagnostic information (tested three ways). Identifiable transparent disclosures do not account for the effect. An exploratory decomposition suggests the shift enters through the unconstrained Fermi assumption, not through later arithmetic or rounding.
+
+![Forest plot of donation-direction contrasts](submission_figures/fig1_forest_contrasts.png)
+
+*Figure 1. Anchoring-controlled donation-direction contrasts across models.*
+
+## Start here
+
+- [`FINAL_REPORT.md`](FINAL_REPORT.md) — the paper
+- [`SUBMISSION_OVERVIEW.md`](SUBMISSION_OVERVIEW.md) — one-page summary
+- [`SUBMISSION_GOOGLE_DOC.md`](SUBMISSION_GOOGLE_DOC.md) — submission write-up
+- [`submission_figures/`](submission_figures/) — key figures
+
+## Repo map
+
+- `analysis/hyp1_*` — anchoring control
+- `analysis/hyp6_impartiality` — measurement study (impartiality claims as a proxy)
+- `analysis/hyp7_impartiality_dissociation` — headline diagnostic study
+- `analysis/hyp8_locus` — exploratory decomposition
+- `runs/` — raw 10-model corpus
+- `src/` — parsers and experiment pipeline
+
+All analyses are offline and deterministic with fixed seeds. Headline numbers were independently recomputed twice.
+
+This fork builds on the upstream replication codebase by [Aditya Singh](https://github.com/adsingh-64/value-leakage) (`adsingh-64/value-leakage`) and the Value Leakage paper setting from Owain Evans' group.
 
 ---
 
