@@ -4,9 +4,9 @@ Fork of the Donation Bet replication: do models shift Fermi estimates when a don
 
 With anchoring controlled by a mirrored fixed-threshold contrast, final answers shift **+15.5%** (95% CI [9.4, 22.1]) toward the donation-favorable direction. Impartiality claims in CoT showed no measurable diagnostic value in this sample (tested three ways). Identifiable transparent disclosures do not account for the effect. An exploratory decomposition is consistent with the shift concentrating in the unconstrained Fermi assumption; the extractor failed a 25% audit, so that is a direction, not a finding.
 
-![Forest plot of donation-direction contrasts](submission_figures/fig1_forest_contrasts.png)
+![Forest plot of donation-direction contrasts](submission_figures/fig3_forest_contrasts.png)
 
-*Figure 1. Anchoring-controlled donation-direction contrasts across models.*
+*Figure 3. Anchoring-controlled donation-direction contrasts across models.*
 
 ## Start here
 

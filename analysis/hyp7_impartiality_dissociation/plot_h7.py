@@ -137,7 +137,7 @@ def main():
         ax.axhline(primary_idx + .5, color='#000000', alpha=.15, lw=1, ls=':')
         ax.grid(axis='x', color='#000000', alpha=.15)
     axes[0].legend(loc='lower right', frameon=False, fontsize=9)
-    fig.suptitle('H7 · Impartiality language and incentive sensitivity', fontsize=15)
+    fig.suptitle('Impartiality language and incentive sensitivity', fontsize=15)
     fig.text(.02, .02, '10,000 paired within-cell record bootstraps; marginal 95% intervals. Hollow diamonds: CI withheld after empty bootstrap cells.\nPrimary excludes DeepSeek Pro; Claude text is a summary. Observational filtering, not causal moderation; no equivalence margin.', fontsize=9, color='#000000')
     fig.tight_layout(rect=[0, .075, 1, .94])
     for ext in ('png', 'svg'):
@@ -163,7 +163,7 @@ def main():
     handles, legend_labels = axes[1].get_legend_handles_labels()
     fig.legend(handles, legend_labels, loc='lower center', bbox_to_anchor=(.5, .065),
                ncol=2, frameon=False, fontsize=9)
-    fig.suptitle('H7 · Threshold crossing by incentive direction', fontsize=15)
+    fig.suptitle('Threshold crossing by incentive direction', fontsize=15)
     fig.text(.02, .02, 'Same binary outcome in both arms; equality is below. Descriptive observed-answer rates; missing-Y bounds are in missing_y_bounds.csv.', fontsize=9)
     fig.tight_layout(rect=[0, .13, 1, .94])
     for ext in ('png', 'svg'):
