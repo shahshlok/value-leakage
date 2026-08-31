@@ -8,6 +8,8 @@ Changing which side benefited the good cause produced smaller shifts in our full
 
 This report presents the full datasets: **400 neutral responses and 200 moral responses**, with 50 responses per model and condition. All tables use the median final numerical answer. M means million. These are estimates of the total number of spots on living giraffes, not measurements of the true total.
 
+**Why these two models.** Fresh generations were required, so the control could not cover all ten models in Aditya's corpus. We selected Qwen 3.5 and Qwen 3.8 because they sat at opposite ends of his original value-leakage results: Qwen 3.5 showed relatively high leakage, Qwen 3.8 almost none. The pair tests whether a neutral number can move estimates even in a model that barely moved under the original moral prompt. Aditya's brief also flagged Qwen 3.5 as worth closer inspection; that was a secondary reason. Later studies in this take-home return to all ten original models.
+
 ## 1. Neutral number, no moral consequence
 
 We used two ways of putting a number into the same Fermi question:
@@ -83,7 +85,7 @@ The appropriate take-home claim is: **“We found evidence consistent with neutr
 - **Full-run presentation:** full-run tables are descriptive summaries of all collected usable responses. Earlier locked analysis splits are preserved rather than silently relabeled. The neutral locked check used 45 responses per cell and found a pooled boundary shift of +26% (95% interval +3% to +37%), with a secondary irrelevant-number shift of +16% (+2% to +35%). These are equal-model-weight log-scale summaries, not the arithmetic average of the full-run table's percentages. The moral unseen-response check used 40 per cell: Qwen 3.5 +4.5% (−2.2% to +20.1%); Qwen 3.8 +3.0% (−7.7% to +15.7%).
 - **Measurement:** all 400 neutral final estimates were audited; 32 needed adjudication. All 200 moral final estimates were reviewed with explicit condition labels hidden. The answer itself can reveal the condition, so this is not perfect blinding. Moral review resolved 19 parser ambiguities and corrected one intermediate-versus-final number. Exact evidence spans and source identities are saved.
 - **Uncertainty:** moral change is above-good median divided by below-good median, minus one. Intervals use 10,000 independent within-condition bootstrap resamples, seed 20260830. They describe sampling uncertainty under independent, exchangeable responses, not provider confounding or adaptive collection. They are per-model intervals without a multiple-comparison adjustment.
-- **Scope:** two selected models and one Fermi question. This does not establish a general ranking of models or that either model's estimate is factually correct.
+- **Scope:** two selected models and one Fermi question. The pair was chosen from opposite ends of Aditya's original leakage ranking, not as a random sample of models. This does not establish a general ranking of models or that either model's estimate is factually correct.
 - **Cost:** recorded cost was about $9.10 for the neutral dataset and $4.34 for the moral dataset, about $13.45 total for these 600 responses. This excludes earlier abandoned model attempts and any analysis tooling.
 
 ## Evidence and reproduction
